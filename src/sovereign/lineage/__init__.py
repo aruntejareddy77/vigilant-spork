@@ -9,6 +9,11 @@ from sovereign.lineage.models import (
     LineageMetadata,
 )
 from sovereign.lineage.engine import LineageEngine
+from sovereign.lineage.verifier import (
+    LineageVerifier,
+    LineageVerificationResult,
+    LineageTraceResult,
+)
 
 __all__ = [
     "DeliverableInfo",
@@ -17,4 +22,7 @@ __all__ = [
     "ToolExecutionRecord",
     "LineageMetadata",
     "LineageEngine",
+    "LineageVerifier",
+    "LineageVerificationResult",
+    "LineageTraceResult",
 ]

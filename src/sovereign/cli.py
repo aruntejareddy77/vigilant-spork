@@ -406,5 +406,82 @@ def attest_verify(manifest: str, key_path: str, root_dir: Optional[str], full_at
         sys.exit(0)
 
 
+# ==========================================
+# Sovereign Deliverable Lineage Commands
+# ==========================================
+
+@cli.group()
+def lineage():
+    """Verify cryptographic lineage and trace forward provenance of deliverables."""
+    pass
+
+
+@lineage.command("verify")
+@click.argument("deliverable", type=click.Path(dir_okay=False))
+@click.option("--ledger", "ledger_path", default=None, type=click.Path(dir_okay=False), help="Path to audit ledger for sequence span verification.")
+def lineage_verify(deliverable: str, ledger_path: Optional[str]):
+    """
+    Verify deliverable integrity, sidecar manifest, embedded metadata, and audit ledger span.
+    """
+    from sovereign.lineage.verifier import LineageVerifier
+
+    result = LineageVerifier.verify_lineage(deliverable, ledger_path=ledger_path)
+
+    click.echo("=== Sovereign Deliverable Lineage Verification ===")
+    click.echo(f"Deliverable File     : {result.deliverable_path}")
+    click.echo(f"Computed SHA-256     : {result.file_sha256_computed or 'N/A'}")
+    click.echo(f"Recorded SHA-256     : {result.file_sha256_recorded or 'N/A'}")
+    click.echo(f"Sidecar Exists       : {'PASS' if result.sidecar_exists else 'FAIL'}")
+    click.echo(f"File Hash Integrity  : {'PASS' if result.file_hash_valid else 'FAIL'}")
+    if result.embedded_metadata_found:
+        click.echo(f"Embedded Metadata    : {'PASS' if result.embedded_metadata_valid else 'FAIL'}")
+    else:
+        click.echo(f"Embedded Metadata    : N/A (clean or non-embedded format)")
+
+    if "span" in result.details:
+        click.echo(f"Audit Ledger Span    : {'PASS' if result.audit_span_valid else 'FAIL'} ({result.details['span']})")
+    else:
+        click.echo(f"Audit Ledger Span    : SKIPPED (ledger not provided/found)")
+
+    if result.is_valid:
+        click.echo("[OK] Lineage verification PASSED. Deliverable is authentic and uncorrupted.")
+        sys.exit(0)
+    else:
+        click.echo(f"[FAIL] Lineage verification FAILED: {result.error_message}", err=True)
+        sys.exit(1)
+
+
+@lineage.command("trace")
+@click.argument("query", type=str)
+@click.option("--dir", "search_dir", default=".", type=click.Path(file_okay=False), help="Root directory to search for .lineage.json sidecars.")
+def lineage_trace(query: str, search_dir: str):
+    """
+    Trace forward provenance: locate all deliverables derived from a source file or SHA-256 hash.
+    """
+    from sovereign.lineage.verifier import LineageVerifier
+
+    results = LineageVerifier.trace_provenance(query=query, search_dir=search_dir)
+
+    click.echo("=== Sovereign Provenance Forward Trace ===")
+    click.echo(f"Query Target         : {query}")
+    click.echo(f"Search Directory     : {Path(search_dir).resolve()}")
+    click.echo(f"Matching Deliverables: {len(results)}")
+    click.echo("------------------------------------------")
+
+    if not results:
+        click.echo("No matching deliverables found.")
+        sys.exit(0)
+
+    for i, res in enumerate(results, start=1):
+        click.echo(f"[{i}] Deliverable: {res.deliverable_path}")
+        click.echo(f"    Match Type : {res.match_type} ({res.matched_id})")
+        click.echo(f"    Deliverable SHA-256: {res.deliverable_sha256[:16]}...")
+        click.echo(f"    Session ID : {res.session_id}")
+        click.echo(f"    Generated  : {res.generated_iso}")
+        click.echo(f"    Sidecar    : {res.sidecar_path}")
+
+    sys.exit(0)
+
+
 if __name__ == "__main__":
     cli()

@@ -7,6 +7,8 @@ import os
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
+from sovereign.models.adapter import BaseModelAdapter
+from sovereign.models.factory import create_adapter
 from sovereign.models.manifest import ModelCapability, ModelManifest, load_manifest
 
 logger = logging.getLogger("sovereign.models.registry")
@@ -14,12 +16,13 @@ logger = logging.getLogger("sovereign.models.registry")
 
 class ModelRegistry:
     """
-    Central catalog of registered model manifests with capability indexing
-    and hot-registration support without orchestrator restarts.
+    Central catalog of registered model manifests with capability indexing,
+    adapter instance caching, and hot-registration support without orchestrator restarts.
     """
 
     def __init__(self):
         self._manifests: Dict[str, ModelManifest] = {}
+        self._adapters: Dict[str, BaseModelAdapter] = {}
 
     def register_manifest(self, manifest: ModelManifest) -> None:
         """Registers or updates a validated ModelManifest."""
@@ -46,13 +49,45 @@ class ModelRegistry:
         """Finds all registered models that declare the specified capability."""
         return [m for m in self._manifests.values() if m.has_capability(capability)]
 
+    def get_adapter(self, model_id: str) -> BaseModelAdapter:
+        """
+        Retrieves or instantiates the cached adapter for the specified model_id.
+        Raises KeyError if the model_id is not registered.
+        """
+        if model_id in self._adapters:
+            return self._adapters[model_id]
+
+        manifest = self.get_manifest(model_id)
+        if not manifest:
+            raise KeyError(f"Model '{model_id}' is not registered in the catalog.")
+
+        adapter = create_adapter(manifest)
+        self._adapters[model_id] = adapter
+        return adapter
+
     def unregister(self, model_id: str) -> bool:
-        """Unregisters a model manifest. Returns True if removed, False if not found."""
+        """Unregisters a model manifest and unloads its adapter if active."""
+        if model_id in self._adapters:
+            try:
+                self._adapters[model_id].unload()
+            except Exception as e:
+                logger.warning(f"Error unloading adapter for {model_id}: {e}")
+            del self._adapters[model_id]
+
         if model_id in self._manifests:
             del self._manifests[model_id]
             logger.info(f"Unregistered model: {model_id}")
             return True
         return False
+
+    def unload_all(self) -> None:
+        """Unloads all currently active model adapters."""
+        for model_id, adapter in list(self._adapters.items()):
+            try:
+                adapter.unload()
+            except Exception as e:
+                logger.warning(f"Error unloading adapter {model_id}: {e}")
+        self._adapters.clear()
 
     def discover_models(self, directory_path: Union[str, Path]) -> int:
         """
@@ -78,5 +113,6 @@ class ModelRegistry:
         return count
 
     def clear(self) -> None:
-        """Clears all registered manifests."""
+        """Clears all registered manifests and unloads all cached adapters."""
+        self.unload_all()
         self._manifests.clear()

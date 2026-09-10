@@ -37,7 +37,6 @@ def generate_manifest(
         first_64, last_64, size_bytes = hash_sparse_chunks(full_path)
 
         mtime_iso = datetime.fromtimestamp(stat_info.st_mtime, timezone.utc).isoformat()
-        inode = getattr(stat_info, "st_ino", 0)
 
         entries[norm_rel] = ManifestEntry(
             path=norm_rel,
@@ -46,7 +45,7 @@ def generate_manifest(
             chunk_first_64mb_sha256=first_64,
             chunk_last_64mb_sha256=last_64,
             mtime_iso=mtime_iso,
-            inode=inode,
+            inode=str(getattr(stat_info, "st_ino", 0)),
         )
 
     return AttestationManifest(

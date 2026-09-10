@@ -16,7 +16,7 @@ class ManifestEntry(BaseModel):
     chunk_first_64mb_sha256: str = Field(min_length=64, max_length=64, description="SHA-256 of first 64MB chunk")
     chunk_last_64mb_sha256: str = Field(min_length=64, max_length=64, description="SHA-256 of last 64MB chunk")
     mtime_iso: str = Field(description="Last modified timestamp in ISO 8601 format")
-    inode: int = Field(default=0, description="Filesystem inode (or 0 if on Windows/unsupported)")
+    inode: str = Field(default="0", description="Filesystem inode as string (avoids RFC 8785 safe-integer overflow on Windows)")
 
 
 class AttestationManifest(BaseModel):

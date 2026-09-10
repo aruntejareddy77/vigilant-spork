@@ -7,6 +7,7 @@ from sovereign.network.monitor import NetworkMonitor
 from sovereign.network.policy import NetworkPolicyEngine
 from sovereign.network.ring_buffer import ConnectionRingBuffer
 from sovereign.network.streamer import TelemetryStreamer, create_telemetry_router
+from sovereign.network.test_egress import EgressTestHarness, run_egress_probes
 
 __all__ = [
     "NetworkEvent",
@@ -18,4 +19,6 @@ __all__ = [
     "NetworkMonitor",
     "TelemetryStreamer",
     "create_telemetry_router",
+    "EgressTestHarness",
+    "run_egress_probes",
 ]

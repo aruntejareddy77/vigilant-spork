@@ -30,12 +30,17 @@ The Sovereign AI Workbench roadmap delivers an end-to-end demonstrable, air-gapp
 3. Model weight and binary checksum verification runs at startup and fails closed on corrupted or tampered files.
 4. Output-to-source traceability generator attaches full model, tool, and document lineage metadata to generated deliverables.
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
+
+- [x] 01-01-PLAN.md
+- [ ] 01-02-PLAN.md
+- [ ] 01-03-PLAN.md
+
 **Wave 1**
 
-- [ ] 01-01: Implement tamper-evident SHA-256 hash-chained audit logging engine and verification CLI
+- [x] 01-01: Implement tamper-evident SHA-256 hash-chained audit logging engine and verification CLI
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -159,7 +164,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Sovereign Foundation, Cryptographic Audit & Network Egress Monitoring | 0/3 | Not started | - |
+| 1. Sovereign Foundation, Cryptographic Audit & Network Egress Monitoring | 1/3 | In Progress|  |
 | 2. Local Model Management, Adapters & VRAM Scheduler | 0/3 | Not started | - |
 | 3. Agentic State Machine, Tool Registry & Isolated Sandbox | 0/3 | Not started | - |
 | 4. Multimodal Ingestion, Local RAG & Native Deliverable Engines | 0/4 | Not started | - |

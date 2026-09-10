@@ -1,0 +1,22 @@
+schema_version: "1.0.0"
+model_id: "qwen-2.5-14b-instruct"
+name: "Qwen 2.5 14B Instruct"
+family: "qwen"
+capabilities:
+  - "text_drafting"
+  - "reasoning"
+  - "calculation"
+context_window: 32768
+quantization: "AWQ"
+vram_estimate_mb: 10240
+engine:
+  type: "sglang"
+  endpoint_url: "http://127.0.0.1:30000/v1"
+  model_name: "Qwen/Qwen2.5-14B-Instruct-AWQ"
+  parameters:
+    temperature: 0.2
+    top_p: 0.95
+    max_tokens: 4096
+integrity:
+  weights_path: "models/qwen2.5-14b-awq/"
+  weights_sha256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"

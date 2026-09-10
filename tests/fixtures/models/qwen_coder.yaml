@@ -1,0 +1,22 @@
+schema_version: "1.0.0"
+model_id: "qwen-2.5-coder-32b"
+name: "Qwen 2.5 Coder 32B Instruct"
+family: "qwen"
+capabilities:
+  - "code_generation"
+  - "reasoning"
+  - "calculation"
+context_window: 32768
+quantization: "GPTQ"
+vram_estimate_mb: 18432
+engine:
+  type: "vllm"
+  endpoint_url: "http://127.0.0.1:8000/v1"
+  model_name: "Qwen/Qwen2.5-Coder-32B-Instruct-GPTQ"
+  parameters:
+    temperature: 0.1
+    top_p: 0.9
+    max_tokens: 8192
+integrity:
+  weights_path: "models/qwen2.5-coder-32b-gptq/"
+  weights_sha256: "a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0"

@@ -1,0 +1,21 @@
+schema_version: "1.0.0"
+model_id: "mock-default-model"
+name: "Sovereign Default Mock Adapter"
+family: "mock"
+capabilities:
+  - "text_drafting"
+  - "reasoning"
+  - "code_generation"
+  - "vision_multimodal"
+  - "embedding"
+  - "calculation"
+context_window: 16384
+quantization: "None"
+vram_estimate_mb: 1024
+engine:
+  type: "mock"
+  parameters:
+    simulated_latency_ms: 10
+integrity:
+  weights_path: null
+  weights_sha256: null

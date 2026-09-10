@@ -97,9 +97,18 @@ class SQLiteCheckpointer:
 
     def get_latest_checkpoint(self, thread_id: str) -> Optional[GraphState]:
         """Retrieve the latest GraphState snapshot for a thread."""
+        record = self.get_latest_checkpoint_record(thread_id)
+        if not record:
+            return None
+        state_dict = json.loads(record["state_json"])
+        return GraphState(**state_dict)
+
+    def get_latest_checkpoint_record(self, thread_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieve the latest checkpoint record metadata and payload."""
         cursor = self._conn.execute(
             """
-            SELECT state_json FROM checkpoints
+            SELECT checkpoint_id, thread_id, step_count, node_name, state_json, created_iso
+            FROM checkpoints
             WHERE thread_id = ?
             ORDER BY checkpoint_id DESC
             LIMIT 1;
@@ -109,8 +118,7 @@ class SQLiteCheckpointer:
         row = cursor.fetchone()
         if not row:
             return None
-        state_dict = json.loads(row["state_json"])
-        return GraphState(**state_dict)
+        return dict(row)
 
     def get_checkpoint_by_id(self, checkpoint_id: int) -> Optional[GraphState]:
         """Retrieve a specific GraphState snapshot by checkpoint_id."""

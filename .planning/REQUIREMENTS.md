@@ -50,8 +50,8 @@
 
 - [x] **SOVG-01**: Append-only structured local audit log records every agent step, tool call, model invocation, user action, and output file (FR-AS-1)
 - [x] **SOVG-02**: Audit log entries are cryptographically hash-chained (SHA-256) such that tampering or deletion is immediately detectable (FR-AS-2)
-- [ ] **SOVG-03**: Real-time visible network monitor dashboard tracks socket connections and kernel-level network attempts with explicit allow/deny outcomes (FR-AS-3)
-- [ ] **SOVG-04**: Host and container network configurations enforce default-deny egress policies blocking all non-intranet/non-localhost routes (FR-AS-4)
+- [x] **SOVG-03**: Real-time visible network monitor dashboard tracks socket connections and kernel-level network attempts with explicit allow/deny outcomes (FR-AS-3)
+- [x] **SOVG-04**: Host and container network configurations enforce default-deny egress policies blocking all non-intranet/non-localhost routes (FR-AS-4)
 - [ ] **SOVG-05**: Startup verification enforces checksum/attestation matching for model files and core binaries, failing closed on discrepancy (FR-AS-5)
 - [ ] **SOVG-06**: Every deliverable carries metadata linking its content to specific models, tools, and source documents used (FR-AS-6)
 
@@ -126,8 +126,8 @@ Deferred to post-SIH MVP release:
 | RAG-03 | Phase 4 | Pending |
 | SOVG-01 | Phase 1 | Complete |
 | SOVG-02 | Phase 1 | Complete |
-| SOVG-03 | Phase 1 | Pending |
-| SOVG-04 | Phase 1 | Pending |
+| SOVG-03 | Phase 1 | Complete |
+| SOVG-04 | Phase 1 | Complete |
 | SOVG-05 | Phase 1 | Pending |
 | SOVG-06 | Phase 1 | Pending |
 | UI-01 | Phase 5 | Pending |

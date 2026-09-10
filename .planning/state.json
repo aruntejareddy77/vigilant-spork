@@ -1,0 +1,43 @@
+{
+  "contract": "1.0.0",
+  "flavor": "core",
+  "milestone": null,
+  "phases": [
+    {
+      "number": "1",
+      "name": "Sovereign Foundation, Cryptographic Audit & Network Egress Monitoring",
+      "status": "pending"
+    },
+    {
+      "number": "2",
+      "name": "Local Model Management, Adapters & VRAM Scheduler",
+      "status": "pending"
+    },
+    {
+      "number": "3",
+      "name": "Agentic State Machine, Tool Registry & Isolated Sandbox",
+      "status": "pending"
+    },
+    {
+      "number": "4",
+      "name": "Multimodal Ingestion, Local RAG & Native Deliverable Engines",
+      "status": "pending"
+    },
+    {
+      "number": "5",
+      "name": "Workbench Web Interface, CLI & Role-Based Access Control",
+      "status": "pending"
+    },
+    {
+      "number": "6",
+      "name": "SIH End-to-End Demonstration Workflows & Verification",
+      "status": "pending"
+    }
+  ],
+  "next": {
+    "command": "/gsd-progress --next",
+    "label": "Advance to the next step",
+    "reason": "Phase 1 of 6 · 0% · executing"
+  },
+  "updated_at": "2026-09-10T04:21:16.875Z"
+}

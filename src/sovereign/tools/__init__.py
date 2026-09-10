@@ -10,6 +10,11 @@ from sovereign.tools.schemas import (
     ToolDefinition,
 )
 from sovereign.tools.registry import ToolRegistry, ToolExecutionError
+from sovereign.tools.builtin import (
+    register_builtin_tools,
+    PathSecurityViolation,
+    CalculationSecurityError,
+)
 
 __all__ = [
     "UserRole",
@@ -19,4 +24,7 @@ __all__ = [
     "ToolDefinition",
     "ToolRegistry",
     "ToolExecutionError",
+    "register_builtin_tools",
+    "PathSecurityViolation",
+    "CalculationSecurityError",
 ]

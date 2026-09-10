@@ -1,0 +1,25 @@
+# Sovereign AI Workbench - Declarative Air-Gapped Network Policy
+# Default configuration enforces strict default-deny zero-egress posture.
+
+policy_name: "sovereign_default_deny"
+version: "1.0.0"
+
+# Loopback interfaces are unconditionally permitted for internal IPC and daemon communication.
+allowed_loopback:
+  - "127.0.0.0/8"
+  - "::1/128"
+
+# Configured enterprise intranet CIDR ranges.
+# In a true air-gap, these may route only to on-premises registries, databases, and local workers.
+allowed_intranet_cidrs:
+  - "10.0.0.0/8"
+  - "172.16.0.0/12"
+  - "192.168.0.0/16"
+
+# Strictly prohibited outbound ports across all interfaces.
+# Port 53 (DNS) is unconditionally blocked to prevent DNS-based data exfiltration.
+denied_ports:
+  - 53
+
+# Fallback decision for any destination not explicitly matched above.
+default_action: "DENY"

@@ -483,5 +483,100 @@ def lineage_trace(query: str, search_dir: str):
     sys.exit(0)
 
 
+# ==========================================
+# Sovereign Model Management Commands
+# ==========================================
+
+@cli.group()
+def model():
+    """Inspect registered models, view capabilities, and register new manifests."""
+    pass
+
+
+@model.command("list")
+@click.option("--dir", "models_dir", default="models", type=click.Path(file_okay=False), help="Directory to discover model manifests.")
+def model_list(models_dir: str):
+    """
+    List all available registered models, engine types, and capabilities.
+    """
+    from sovereign.models.registry import ModelRegistry
+
+    registry = ModelRegistry()
+    d_path = Path(models_dir)
+    if d_path.exists():
+        registry.discover_models(d_path)
+
+    manifests = registry.list_manifests()
+    click.echo("=== Sovereign Model Catalog ===")
+    click.echo(f"Models Directory     : {d_path.resolve() if d_path.exists() else 'Directory not found'}")
+    click.echo(f"Total Models Found   : {len(manifests)}")
+    click.echo("--------------------------------------------------------------------------------")
+
+    if not manifests:
+        click.echo("No model manifests found.")
+        sys.exit(0)
+
+    click.echo(f"{'MODEL ID':<26} {'ENGINE':<10} {'QUANT':<8} {'VRAM(MB)':<10} {'CAPABILITIES'}")
+    click.echo("-" * 80)
+    for m in sorted(manifests, key=lambda x: x.model_id):
+        caps = ",".join(c.value for c in m.capabilities)
+        click.echo(
+            f"{m.model_id:<26} {m.engine.type.value:<10} {m.quantization or 'None':<8} "
+            f"{m.vram_estimate_mb:<10} {caps}"
+        )
+    sys.exit(0)
+
+
+@model.command("inspect")
+@click.argument("model_id", type=str)
+@click.option("--dir", "models_dir", default="models", type=click.Path(file_okay=False), help="Directory containing model manifests.")
+def model_inspect(model_id: str, models_dir: str):
+    """
+    Display full configuration and integrity details for a model manifest.
+    """
+    from sovereign.models.registry import ModelRegistry
+
+    registry = ModelRegistry()
+    d_path = Path(models_dir)
+    if d_path.exists():
+        registry.discover_models(d_path)
+
+    manifest = registry.get_manifest(model_id)
+    if not manifest:
+        click.echo(f"[ERROR] Model '{model_id}' not found in registry ({models_dir}).", err=True)
+        sys.exit(1)
+
+    click.echo(f"=== Model Manifest: {manifest.model_id} ===")
+    click.echo(manifest.model_dump_json(indent=2))
+    sys.exit(0)
+
+
+@model.command("register")
+@click.argument("manifest_path", type=click.Path(dir_okay=False))
+def model_register(manifest_path: str):
+    """
+    Validate and register a new model manifest file into the workbench.
+    """
+    from sovereign.models.registry import ModelRegistry
+
+    p = Path(manifest_path)
+    if not p.exists():
+        click.echo(f"[ERROR] Manifest file not found: {p}", err=True)
+        sys.exit(1)
+
+    registry = ModelRegistry()
+    try:
+        manifest = registry.register_from_file(p)
+    except Exception as e:
+        click.echo(f"[FAIL] Manifest validation failed: {e}", err=True)
+        sys.exit(1)
+
+    click.echo(f"[OK] Successfully registered model '{manifest.model_id}' ({manifest.name}).")
+    click.echo(f"     Engine       : {manifest.engine.type.value}")
+    click.echo(f"     Capabilities : {[c.value for c in manifest.capabilities]}")
+    click.echo(f"     VRAM Estimate: {manifest.vram_estimate_mb} MB")
+    sys.exit(0)
+
+
 if __name__ == "__main__":
     cli()

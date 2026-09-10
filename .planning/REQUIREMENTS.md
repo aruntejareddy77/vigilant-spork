@@ -14,16 +14,16 @@
 
 ### Agent Orchestration & State Machine (ORCH)
 
-- [ ] **ORCH-01**: Agent runtime implements a multi-step planner and executor state machine (LangGraph-style) decomposing requests into sequential tool and model invocations (FR-AO-1)
-- [ ] **ORCH-02**: Agent maintains and persists session state across multi-turn task iterations so intermediate findings and drafts are retained without re-executing completed steps (FR-AO-4)
-- [ ] **ORCH-03**: System provides a bounded self-correction loop (configurable, default 3 attempts) when tools or code executions produce runtime errors (FR-AO-5)
-- [ ] **ORCH-04**: System enforces a Human-in-the-Loop (HITL) approval gate pausing graph execution before final deliverable generation and saving state until resumed (FR-AO-6)
+- [x] **ORCH-01**: Agent runtime implements a multi-step planner and executor state machine (LangGraph-style) decomposing requests into sequential tool and model invocations (FR-AO-1)
+- [x] **ORCH-02**: Agent maintains and persists session state across multi-turn task iterations so intermediate findings and drafts are retained without re-executing completed steps (FR-AO-4)
+- [x] **ORCH-03**: System provides a bounded self-correction loop (configurable, default 3 attempts) when tools or code executions produce runtime errors (FR-AO-5)
+- [x] **ORCH-04**: System enforces a Human-in-the-Loop (HITL) approval gate pausing graph execution before final deliverable generation and saving state until resumed (FR-AO-6)
 
 ### Tool Registry & Sandboxed Execution (TOOL)
 
-- [ ] **TOOL-01**: System provides a typed tool registry with declared input/output schemas enabling dynamic tool discovery and validation (FR-AO-2)
-- [ ] **TOOL-02**: Isolated code sandbox executes generated Python scripts with no network namespace access, bounded CPU/memory, and execution timeouts (FR-AO-3)
-- [ ] **TOOL-03**: Sandbox returns structured execution traces, stdout, stderr, and test assertion logs back to the agent runtime
+- [x] **TOOL-01**: System provides a typed tool registry with declared input/output schemas enabling dynamic tool discovery and validation (FR-AO-2)
+- [x] **TOOL-02**: Isolated code sandbox executes generated Python scripts with no network namespace access, bounded CPU/memory, and execution timeouts (FR-AO-3)
+- [x] **TOOL-03**: Sandbox returns structured execution traces, stdout, stderr, and test assertion logs back to the agent runtime
 
 ### Multimodal Ingestion & Document Understanding (MMOD)
 

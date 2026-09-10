@@ -628,5 +628,247 @@ def model_route(prompt: str, models_dir: str, image_path: Optional[str], model_o
     sys.exit(0)
 
 
+# ==========================================
+# Sovereign Tool Commands
+# ==========================================
+
+@cli.group()
+def tool():
+    """Inspect and manage registered agent tools and schemas."""
+    pass
+
+
+@tool.command("list")
+@click.option("--role", "role_filter", default=None, type=click.Choice(["admin", "engineer", "auditor"], case_sensitive=False), help="Filter by user role clearance.")
+@click.option("--workspace", default=".", type=click.Path(), help="Workspace root directory.")
+def tool_list(role_filter: Optional[str], workspace: str):
+    """
+    List all registered tools, their descriptions, and required role clearances.
+    """
+    from sovereign.tools.schemas import UserRole
+    from sovereign.tools.registry import ToolRegistry
+    from sovereign.tools.builtin import register_builtin_tools
+
+    registry = ToolRegistry()
+    register_builtin_tools(registry, workspace)
+
+    role = UserRole(role_filter.lower()) if role_filter else None
+    tools = registry.list_tools(user_role=role)
+
+    click.echo(f"=== Registered Sovereign Tools ({len(tools)}) ===")
+    if not tools:
+        click.echo("No tools available for the specified clearance level.")
+        sys.exit(0)
+
+    for t in tools:
+        click.echo(f"  • {t.name:<22} [{t.required_role.value.upper():<8}] - {t.description}")
+    sys.exit(0)
+
+
+@tool.command("inspect")
+@click.argument("tool_name", type=str)
+@click.option("--workspace", default=".", type=click.Path(), help="Workspace root directory.")
+def tool_inspect(tool_name: str, workspace: str):
+    """
+    Display the detailed JSON parameter schema and metadata for a tool.
+    """
+    from sovereign.tools.registry import ToolRegistry
+    from sovereign.tools.builtin import register_builtin_tools
+
+    registry = ToolRegistry()
+    register_builtin_tools(registry, workspace)
+
+    tool_def = registry.get_tool(tool_name)
+    if not tool_def:
+        click.echo(f"[ERROR] Tool '{tool_name}' not found.", err=True)
+        sys.exit(1)
+
+    click.echo(f"Tool Name    : {tool_def.name}")
+    click.echo(f"Required Role: {tool_def.required_role.value.upper()}")
+    click.echo(f"Description  : {tool_def.description}")
+    click.echo("Parameters Schema:")
+    click.echo(json.dumps(tool_def.parameters_schema, indent=2))
+    sys.exit(0)
+
+
+# ==========================================
+# Sovereign Workflow Commands
+# ==========================================
+
+@cli.group()
+def workflow():
+    """Execute and manage stateful agentic workflows."""
+    pass
+
+
+def _build_workflow_runtime(workspace_root: str, db_path: str, ledger_path: Optional[str] = None):
+    """Internal factory building standard agent workflow runtime."""
+    import uuid
+    from sovereign.orchestration.state import GraphState
+    from sovereign.orchestration.graph import StateGraph, END
+    from sovereign.orchestration.checkpointer import SQLiteCheckpointer
+    from sovereign.orchestration.runtime import AgentRuntime, interrupt
+    from sovereign.audit.ledger import AuditLedger
+    from sovereign.tools.registry import ToolRegistry
+    from sovereign.tools.builtin import register_builtin_tools
+
+    registry = ToolRegistry()
+    register_builtin_tools(registry, workspace_root)
+    checkpointer = SQLiteCheckpointer(db_path)
+    ledger = AuditLedger(ledger_path) if ledger_path else None
+
+    builder = StateGraph()
+
+    def analyze_step(state: GraphState):
+        prompt = state.values.get("prompt", "")
+        is_calc = any(kw in prompt.lower() for kw in ("calc", "calculate", "+", "*", "sqrt", "math"))
+        return {"values": {"is_calc": is_calc, "plan": f"Plan for: {prompt}"}}
+
+    def execute_step(state: GraphState):
+        prompt = state.values.get("prompt", "")
+        if state.values.get("is_calc"):
+            expr = prompt.lower().replace("calculate", "").replace("calc", "").strip()
+            if not expr:
+                expr = "2 + 2"
+            try:
+                res = registry.execute_tool("execute_calculation", {"expression": expr})
+                return {"values": {"output": f"Calculation Result: {res['result']}", "trace": res.get("trace", "")}}
+            except Exception as e:
+                return {"values": {"output": f"Calculation Error: {e}"}, "last_error": str(e)}
+        else:
+            return {"values": {"output": f"Task processed: {prompt}"}}
+
+    def review_step(state: GraphState):
+        prompt = state.values.get("prompt", "")
+        if any(kw in prompt.lower() for kw in ("report", "deliverable", "deploy", "release", "approve")):
+            interrupt({
+                "action": "deliverable_signoff",
+                "prompt": prompt,
+                "summary": state.values.get("output", "Analysis ready"),
+            })
+        return {"values": {"approved": True}}
+
+    def finalize_step(state: GraphState):
+        return {"values": {"completed": True}}
+
+    builder.add_node("analyze", analyze_step)
+    builder.add_node("execute", execute_step)
+    builder.add_node("review", review_step)
+    builder.add_node("finalize", finalize_step)
+
+    builder.set_entry_point("analyze")
+    builder.add_edge("analyze", "execute")
+    builder.add_edge("execute", "review")
+    builder.add_edge("review", "finalize")
+    builder.add_edge("finalize", END)
+
+    return AgentRuntime(builder, checkpointer=checkpointer, audit_ledger=ledger)
+
+
+@workflow.command("run")
+@click.argument("prompt", type=str)
+@click.option("--thread-id", "thread_id", default=None, help="Explicit thread session ID.")
+@click.option("--db", "db_path", default="agent_state.sqlite", help="SQLite state database.")
+@click.option("--ledger", "ledger_path", default=None, help="Audit ledger path.")
+@click.option("--workspace", default=".", help="Workspace directory for file/tool operations.")
+def workflow_run(prompt: str, thread_id: Optional[str], db_path: str, ledger_path: Optional[str], workspace: str):
+    """
+    Launch a multi-step agent workflow for the given prompt.
+    """
+    import uuid
+    from sovereign.orchestration.state import GraphState
+
+    runtime = _build_workflow_runtime(workspace, db_path, ledger_path)
+    tid = thread_id or f"wf-{uuid.uuid4().hex[:8]}"
+
+    click.echo(f"=== Running Sovereign Workflow ===")
+    click.echo(f"Thread ID : {tid}")
+    click.echo(f"Prompt    : {prompt}")
+
+    initial_state = GraphState(thread_id=tid, values={"prompt": prompt})
+    final_state = runtime.run(initial_state)
+
+    click.echo(f"Status    : {final_state.status}")
+    click.echo(f"Steps     : {final_state.step_count}")
+
+    if final_state.status == "SUSPENDED":
+        click.echo("\n[PAUSED] Workflow paused at Human-in-the-Loop approval gate.")
+        click.echo(f"Pending Action : {final_state.pending_approval}")
+        click.echo(f"To resume, run: sovereign workflow resume {tid} --decision approve")
+        sys.exit(0)
+    elif final_state.status == "COMPLETED":
+        click.echo(f"Output    : {final_state.values.get('output', 'Workflow completed successfully')}")
+        sys.exit(0)
+    else:
+        click.echo(f"[FAILED] Error: {final_state.last_error}", err=True)
+        sys.exit(1)
+
+
+@workflow.command("resume")
+@click.argument("thread_id", type=str)
+@click.option("--decision", required=True, type=click.Choice(["approve", "reject"], case_sensitive=False), help="Decision: approve or reject")
+@click.option("--notes", default=None, help="Operator notes or reasoning.")
+@click.option("--role", "actor_role", default="operator", help="Role of the approving operator.")
+@click.option("--db", "db_path", default="agent_state.sqlite", help="SQLite state database.")
+@click.option("--ledger", "ledger_path", default=None, help="Audit ledger path.")
+@click.option("--workspace", default=".", help="Workspace directory.")
+def workflow_resume(thread_id: str, decision: str, notes: Optional[str], actor_role: str, db_path: str, ledger_path: Optional[str], workspace: str):
+    """
+    Resume an interrupted/suspended workflow upon operator approval or rejection.
+    """
+    runtime = _build_workflow_runtime(workspace, db_path, ledger_path)
+
+    try:
+        resumed_state = runtime.resume(
+            thread_id=thread_id,
+            decision=decision,
+            notes=notes,
+            actor_role=actor_role,
+        )
+    except Exception as exc:
+        click.echo(f"[ERROR] Failed to resume workflow: {exc}", err=True)
+        sys.exit(1)
+
+    click.echo(f"=== Resumed Workflow: {thread_id} ===")
+    click.echo(f"Decision  : {decision.upper()}")
+    click.echo(f"Status    : {resumed_state.status}")
+    if resumed_state.status == "COMPLETED":
+        click.echo(f"Output    : {resumed_state.values.get('output', 'Workflow completed')}")
+        sys.exit(0)
+    elif resumed_state.status == "FAILED":
+        click.echo(f"Outcome   : Rejected / Halted ({resumed_state.last_error})")
+        sys.exit(0)
+    else:
+        click.echo(f"Status    : {resumed_state.status}")
+        sys.exit(0)
+
+
+@workflow.command("list")
+@click.option("--status", default=None, type=click.Choice(["RUNNING", "SUSPENDED", "COMPLETED", "FAILED"], case_sensitive=False), help="Filter threads by status.")
+@click.option("--db", "db_path", default="agent_state.sqlite", help="SQLite state database.")
+def workflow_list(status: Optional[str], db_path: str):
+    """
+    List tracked workflow session threads and their status.
+    """
+    from sovereign.orchestration.checkpointer import SQLiteCheckpointer
+
+    cp_path = Path(db_path)
+    if not cp_path.exists():
+        click.echo(f"No state database found at '{db_path}'. 0 threads tracked.")
+        sys.exit(0)
+
+    with SQLiteCheckpointer(cp_path) as cp:
+        threads = cp.list_threads(status=status.upper() if status else None)
+
+    click.echo(f"=== Sovereign Workflow Threads ({len(threads)}) ===")
+    if not threads:
+        click.echo("No threads found.")
+        sys.exit(0)
+
+    for t in threads:
+        click.echo(f"  • {t['thread_id']:<20} [{t['status']:<9}] Updated: {t['updated_iso']}")
+    sys.exit(0)
+
+
 if __name__ == "__main__":
     cli()

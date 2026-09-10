@@ -578,5 +578,55 @@ def model_register(manifest_path: str):
     sys.exit(0)
 
 
+@model.command("route")
+@click.argument("prompt", type=str)
+@click.option("--dir", "models_dir", default="models", type=click.Path(file_okay=False), help="Directory containing model manifests.")
+@click.option("--image", "image_path", default=None, type=click.Path(dir_okay=False), help="Path to image file for multimodal testing.")
+@click.option("--model", "model_override", default=None, type=str, help="Explicit model ID override.")
+def model_route(prompt: str, models_dir: str, image_path: Optional[str], model_override: Optional[str]):
+    """
+    Test task auto-routing: classify prompt and display selected model and VRAM requirement.
+    """
+    from sovereign.models.registry import ModelRegistry
+    from sovereign.models.router import TaskRouter
+
+    registry = ModelRegistry()
+    d_path = Path(models_dir)
+    if d_path.exists():
+        registry.discover_models(d_path)
+
+    if not registry.list_manifests():
+        click.echo(f"[ERROR] No models registered in '{models_dir}'.", err=True)
+        sys.exit(1)
+
+    image_bytes = None
+    if image_path:
+        img_p = Path(image_path)
+        if not img_p.exists():
+            click.echo(f"[ERROR] Image file not found: {img_p}", err=True)
+            sys.exit(1)
+        image_bytes = img_p.read_bytes()
+
+    router = TaskRouter(registry)
+    try:
+        decision = router.route(
+            prompt=prompt,
+            image_bytes=image_bytes,
+            model_override=model_override,
+        )
+    except Exception as e:
+        click.echo(f"[FAIL] Routing failed: {e}", err=True)
+        sys.exit(1)
+
+    click.echo("=== Sovereign Task Routing Decision ===")
+    click.echo(f"Prompt               : {prompt[:80]}{'...' if len(prompt) > 80 else ''}")
+    click.echo(f"Classified Capability: {decision.capability.value}")
+    click.echo(f"Selected Model ID    : {decision.model_id}")
+    click.echo(f"VRAM Estimate        : {decision.vram_estimate_mb} MB")
+    click.echo(f"Manual Override      : {'Yes' if decision.is_override else 'No'}")
+    click.echo(f"Routing Rationale    : {decision.rationale}")
+    sys.exit(0)
+
+
 if __name__ == "__main__":
     cli()

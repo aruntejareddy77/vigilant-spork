@@ -63,3 +63,53 @@ def test_cli_model_register_missing_file():
     res = runner.invoke(cli, ["model", "register", "non_existent_manifest.yaml"])
     assert res.exit_code == 1
     assert "Manifest file not found" in res.output
+
+
+def test_cli_model_route_coding():
+    """Verify sovereign model route selects code model for programming prompt."""
+    runner = CliRunner()
+    res = runner.invoke(
+        cli,
+        ["model", "route", "Write a python script to parse tags", "--dir", str(FIXTURES_DIR)],
+    )
+    assert res.exit_code == 0, res.output
+    assert "Sovereign Task Routing Decision" in res.output
+    assert "Classified Capability: code_generation" in res.output
+    assert "Selected Model ID    : qwen-2.5-coder-32b" in res.output
+    assert "Manual Override      : No" in res.output
+
+
+def test_cli_model_route_manual_override():
+    """Verify sovereign model route respects --model manual override."""
+    runner = CliRunner()
+    res = runner.invoke(
+        cli,
+        [
+            "model", "route", "Write a python script",
+            "--dir", str(FIXTURES_DIR),
+            "--model", "qwen-2.5-14b-instruct",
+        ],
+    )
+    assert res.exit_code == 0, res.output
+    assert "Selected Model ID    : qwen-2.5-14b-instruct" in res.output
+    assert "Manual Override      : Yes" in res.output
+
+
+def test_cli_model_route_multimodal(tmp_path):
+    """Verify sovereign model route selects vision model when image is provided."""
+    dummy_img = tmp_path / "test.jpg"
+    dummy_img.write_bytes(b"DUMMY_IMAGE_DATA")
+
+    runner = CliRunner()
+    res = runner.invoke(
+        cli,
+        [
+            "model", "route", "Identify all equipment in this drawing",
+            "--dir", str(FIXTURES_DIR),
+            "--image", str(dummy_img),
+        ],
+    )
+    assert res.exit_code == 0, res.output
+    assert "Classified Capability: vision_multimodal" in res.output
+    assert "Selected Model ID    : florence-2-large" in res.output
+

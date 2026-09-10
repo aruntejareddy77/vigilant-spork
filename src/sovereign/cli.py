@@ -279,5 +279,132 @@ def test_egress(timeout: float, policy_path: str, ledger_path: str):
         sys.exit(1)
 
 
+# ==========================================
+# Sovereign Startup Attestation Commands
+# ==========================================
+
+@cli.group()
+def attest():
+    """Generate, sign, and verify cryptographic asset attestation manifests."""
+    pass
+
+
+@attest.command("generate")
+@click.option("--dir", "root_dir", default=".", type=click.Path(file_okay=False), help="Root directory containing assets.")
+@click.option("--output", default="attestation_manifest.json", type=click.Path(dir_okay=False), help="Output manifest path.")
+@click.option("--files", default=None, help="Comma-separated relative file paths to catalog.")
+def attest_generate(root_dir: str, output: str, files: Optional[str]):
+    """
+    Generate an unsigned attestation manifest calculating full SHA-256 and 64MB sparse chunk hashes.
+    """
+    from sovereign.attestation.signer import generate_manifest
+
+    r_dir = Path(root_dir).resolve()
+    if files:
+        file_list = [f.strip() for f in files.split(",") if f.strip()]
+    else:
+        # Index files in root directory
+        file_list = [
+            p.relative_to(r_dir).as_posix()
+            for p in r_dir.rglob("*")
+            if p.is_file() and not p.name.endswith(".json") and not p.name.endswith(".pyc")
+        ]
+
+    manifest = generate_manifest(r_dir, file_list)
+    out_path = Path(output)
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(manifest.model_dump(), f, indent=2, ensure_ascii=False)
+
+    click.echo(f"[OK] Generated attestation manifest with {len(manifest.entries)} entries at {out_path}")
+    sys.exit(0)
+
+
+@attest.command("sign")
+@click.option("--manifest", required=True, type=click.Path(dir_okay=False), help="Path to attestation_manifest.json.")
+@click.option("--key", "key_path", required=True, type=click.Path(dir_okay=False), help="Path to Ed25519 private key PEM.")
+def attest_sign(manifest: str, key_path: str):
+    """
+    Sign an attestation manifest with an Ed25519 private key.
+    """
+    from sovereign.attestation.signer import sign_manifest
+
+    m_path = Path(manifest)
+    k_path = Path(key_path)
+
+    if not m_path.exists():
+        click.echo(f"[ERROR] Manifest file not found: {m_path}", err=True)
+        sys.exit(1)
+    if not k_path.exists():
+        click.echo(f"[ERROR] Private key file not found: {k_path}", err=True)
+        sys.exit(1)
+
+    with open(m_path, "r", encoding="utf-8") as f:
+        manifest_dict = json.load(f)
+    with open(k_path, "rb") as f:
+        priv_key_pem = f.read()
+
+    sig = sign_manifest(manifest_dict, priv_key_pem)
+    manifest_dict["signature"] = sig
+
+    with open(m_path, "w", encoding="utf-8") as f:
+        json.dump(manifest_dict, f, indent=2, ensure_ascii=False)
+
+    click.echo(f"[OK] Successfully signed {m_path} with Ed25519 signature.")
+    click.echo(f"     Signature: {sig[:32]}...{sig[-16:]}")
+    sys.exit(0)
+
+
+@attest.command("verify")
+@click.option("--manifest", default="attestation_manifest.json", type=click.Path(dir_okay=False))
+@click.option("--key", "key_path", required=True, type=click.Path(dir_okay=False), help="Path to Ed25519 public key.")
+@click.option("--dir", "root_dir", default=None, type=click.Path(file_okay=False), help="Base directory for cataloged assets.")
+@click.option("--full", "full_attest", is_flag=True, default=False, help="Perform full byte-by-byte SHA-256 verification.")
+@click.option("--dev-mode", is_flag=True, default=False, help="Bypass fail-closed halt on discrepancies.")
+def attest_verify(manifest: str, key_path: str, root_dir: Optional[str], full_attest: bool, dev_mode: bool):
+    """
+    Verify attestation manifest signature and validate asset checksums.
+    """
+    from sovereign.attestation.verifier import AttestationError, AttestationGuard
+
+    m_path = Path(manifest)
+    k_path = Path(key_path)
+
+    if not m_path.exists():
+        click.echo(f"[ERROR] Manifest not found: {m_path}", err=True)
+        sys.exit(1)
+    if not k_path.exists():
+        click.echo(f"[ERROR] Public key not found: {k_path}", err=True)
+        sys.exit(1)
+
+    with open(k_path, "rb") as f:
+        pub_key_pem = f.read()
+
+    guard = AttestationGuard(pub_key_pem)
+    try:
+        res = guard.verify_manifest(
+            manifest_path=m_path,
+            root_dir=root_dir,
+            full_attest=full_attest,
+            dev_mode=dev_mode,
+        )
+    except AttestationError as exc:
+        click.echo(f"[FAIL] Attestation verification failed:\n{exc}", err=True)
+        sys.exit(1)
+
+    if res.is_valid:
+        click.echo(
+            f"[OK] Startup attestation PASSED.\n"
+            f"     Mode           : {res.mode}\n"
+            f"     Files verified : {res.files_checked}\n"
+            f"     Duration       : {res.duration_ms:.1f}ms"
+        )
+        sys.exit(0)
+    else:
+        click.echo(f"[WARNING] Attestation discrepancies detected ({len(res.discrepancies)}) with --dev-mode:")
+        for d in res.discrepancies:
+            click.echo(f"  - {d}")
+        sys.exit(0)
+
+
 if __name__ == "__main__":
     cli()

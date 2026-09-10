@@ -11,6 +11,7 @@ import portalocker
 
 from sovereign.audit.canonical import GENESIS_PREVIOUS_HASH, canonicalize_and_hash
 from sovereign.audit.models import AuditEvent
+from sovereign.audit.verifier import AuditTamperException, verify_ledger_tip
 
 
 class AuditLedger:
@@ -66,6 +67,11 @@ class AuditLedger:
 
         # Acquire exclusive lock for reading the tip and appending
         with portalocker.Lock(str(self.lock_path), mode="a", timeout=10.0):
+            # Guard: verify ledger tip integrity before appending
+            is_valid, msg, _ = verify_ledger_tip(self.ledger_path)
+            if not is_valid:
+                raise AuditTamperException(f"Ledger tip integrity check failed: {msg}")
+
             next_seq, prev_hash = self._get_tip_state()
 
             record_dict, _ = canonicalize_and_hash(

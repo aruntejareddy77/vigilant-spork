@@ -8,8 +8,8 @@
 ### Model Management & Routing (MODL)
 
 - [x] **MODL-01**: System provides a pluggable adapter interface supporting local open-weight model registration via YAML/JSON manifest without modifying orchestrator code (FR-MM-1)
-- [ ] **MODL-02**: System automatically routes incoming user tasks to appropriate model class (reasoning/drafting, code execution, vision/multimodal) based on task classification (FR-MM-2)
-- [ ] **MODL-03**: Model manager tracks GPU VRAM usage and orchestrates model loading/unloading or graceful quantization to prevent out-of-memory crashes on single 24GB-class GPU (FR-MM-3)
+- [x] **MODL-02**: System automatically routes incoming user tasks to appropriate model class (reasoning/drafting, code execution, vision/multimodal) based on task classification (FR-MM-2)
+- [x] **MODL-03**: Model manager tracks GPU VRAM usage and orchestrates model loading/unloading or graceful quantization to prevent out-of-memory crashes on single 24GB-class GPU (FR-MM-3)
 - [x] **MODL-04**: System supports a deterministic test/mock model adapter allowing full end-to-end verification in environments without discrete GPU hardware
 
 ### Agent Orchestration & State Machine (ORCH)
@@ -102,8 +102,8 @@ Deferred to post-SIH MVP release:
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | MODL-01 | Phase 2 | Complete |
-| MODL-02 | Phase 2 | Pending |
-| MODL-03 | Phase 2 | Pending |
+| MODL-02 | Phase 2 | Complete |
+| MODL-03 | Phase 2 | Complete |
 | MODL-04 | Phase 2 | Complete |
 | ORCH-01 | Phase 3 | Pending |
 | ORCH-02 | Phase 3 | Pending |

@@ -63,11 +63,11 @@ Plans:
 3. VRAM scheduler tracks memory budgets and prevents OOM crashes on a 24GB reference GPU.
 4. A deterministic mock adapter allows running and verifying all pipelines on machines without discrete GPUs.
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 
-- [ ] 02-01: Build uniform Model Manager interface and manifest registration schema
+- [x] 02-01: Build uniform Model Manager interface and manifest registration schema
 - [ ] 02-02: Implement local inference adapters (SGLang / vLLM / Ollama / llama.cpp) and deterministic mock test adapter
 - [ ] 02-03: Implement task classification router and VRAM-aware model scheduler
 
@@ -165,7 +165,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Sovereign Foundation, Cryptographic Audit & Network Egress Monitoring | 3/3 | Complete | 2026-09-10 |
-| 2. Local Model Management, Adapters & VRAM Scheduler | 0/3 | Not started | - |
+| 2. Local Model Management, Adapters & VRAM Scheduler | 1/3 | In Progress |  |
 | 3. Agentic State Machine, Tool Registry & Isolated Sandbox | 0/3 | Not started | - |
 | 4. Multimodal Ingestion, Local RAG & Native Deliverable Engines | 0/4 | Not started | - |
 | 5. Workbench Web Interface, CLI & Role-Based Access Control | 0/3 | Not started | - |

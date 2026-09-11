@@ -6,12 +6,12 @@
     {
       "number": "1",
       "name": "Sovereign Foundation, Cryptographic Audit & Network Egress Monitoring",
-      "status": "in_progress"
+      "status": "complete"
     },
     {
       "number": "2",
       "name": "Local Model Management, Adapters & VRAM Scheduler",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "number": "3",
@@ -35,9 +35,9 @@
     }
   ],
   "next": {
-    "command": "/gsd-progress --next",
-    "label": "Advance to the next step",
-    "reason": "Phase 01 of 6 · 0% · executing"
+    "command": "/gsd-progress",
+    "label": "Show progress",
+    "reason": "Unsure of state — showing progress"
   },
-  "updated_at": "2026-09-10T06:51:47.110Z"
+  "updated_at": "2026-09-11T06:11:51.277Z"
 }

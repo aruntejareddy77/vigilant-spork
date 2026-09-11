@@ -108,10 +108,20 @@ Plans:
 **Plans:** 4 plans
 
 Plans:
+**Wave 1**
 
 - [ ] 04-01: Implement offline OCR and structured form handwriting extraction pipeline
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 04-02: Build local vector database RAG pipeline with RBAC metadata filtering and inline citations
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 04-03: Implement native Office deliverable generators (.docx, .xlsx with formulas, .pptx) and calculation trace export
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 04-04: Implement engineering drawing / P&ID revision comparison and visual annotation overlay generator
 
 ### Phase 5: Workbench Web Interface, CLI & Role-Based Access Control

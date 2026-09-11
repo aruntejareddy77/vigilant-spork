@@ -23,6 +23,19 @@ from sovereign.multimodal.forms import (
     FormExtractor,
     build_hitl_interrupt_payload,
 )
+from sovereign.multimodal.models import (
+    ModalityType,
+    DocumentRegion,
+    FormField,
+    ExtractedTable,
+    DocumentPage,
+    NormalizedDocument,
+)
+from sovereign.multimodal.tools import (
+    OCR_DOCUMENT_TOOL,
+    execute_ocr_document,
+    register_multimodal_tools,
+)
 
 __all__ = [
     "MAX_IMAGE_PIXELS",
@@ -42,4 +55,13 @@ __all__ = [
     "RawFormField",
     "FormExtractor",
     "build_hitl_interrupt_payload",
+    "ModalityType",
+    "DocumentRegion",
+    "FormField",
+    "ExtractedTable",
+    "DocumentPage",
+    "NormalizedDocument",
+    "OCR_DOCUMENT_TOOL",
+    "execute_ocr_document",
+    "register_multimodal_tools",
 ]

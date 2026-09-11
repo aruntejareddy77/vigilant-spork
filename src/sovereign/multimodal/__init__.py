@@ -15,6 +15,14 @@ from sovereign.multimodal.ocr import (
     get_ocr_backend,
     validate_image_file,
 )
+from sovereign.multimodal.forms import (
+    CONFIDENCE_THRESHOLD,
+    CheckboxState,
+    FormFieldType,
+    RawFormField,
+    FormExtractor,
+    build_hitl_interrupt_payload,
+)
 
 __all__ = [
     "MAX_IMAGE_PIXELS",
@@ -28,4 +36,10 @@ __all__ = [
     "DeterministicMockOCRBackend",
     "get_ocr_backend",
     "validate_image_file",
+    "CONFIDENCE_THRESHOLD",
+    "CheckboxState",
+    "FormFieldType",
+    "RawFormField",
+    "FormExtractor",
+    "build_hitl_interrupt_payload",
 ]

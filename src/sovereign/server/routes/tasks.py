@@ -52,6 +52,7 @@ class TaskStatusResponse(BaseModel):
     status: str
     steps: List[Dict] = Field(default_factory=list)
     pending_approval: Optional[Dict] = None
+    artifacts: List[str] = Field(default_factory=list)
 
 
 # ── In-memory task store (wired to runtime in production) ────────────────────
@@ -115,6 +116,7 @@ async def get_task_status(task_id: str):
         status=task["status"],
         steps=task.get("steps", []),
         pending_approval=task.get("pending_approval"),
+        artifacts=task.get("artifacts", []),
     )
 
 
@@ -128,7 +130,38 @@ async def resume_task(task_id: str, request: TaskResumeRequest):
     if not task:
         raise HTTPException(status_code=404, detail=f"Task '{task_id}' not found")
 
-    task["status"] = "RESUMED" if request.decision == "approve" else "REJECTED"
+    if request.decision == "approve":
+        # Check if demo workflow or standard workflow
+        if task.get("demo_id") == "demo_a" or task.get("pending_approval"):
+            task["status"] = "COMPLETED"
+            task["pending_approval"] = None
+            task.setdefault("artifacts", []).append("Refinery_Inspection_Approval_Note.docx")
+            task.setdefault("steps", []).append({
+                "type": "TRACE_STEP",
+                "step_index": len(task["steps"]) + 1,
+                "node_name": "deliverable_export",
+                "model_id": "system",
+                "status": "COMPLETED",
+                "thought": f"Operator sign-off verified: {request.notes or 'Approved'}. Exported Refinery_Inspection_Approval_Note.docx",
+                "elapsed_ms": 65.0,
+                "artifact_url": f"/api/tasks/{task_id}/artifacts/Refinery_Inspection_Approval_Note.docx",
+                "artifact_name": "Refinery_Inspection_Approval_Note.docx",
+            })
+        else:
+            task["status"] = "RESUMED"
+    else:
+        task["status"] = "REJECTED"
+        task["pending_approval"] = None
+        task.setdefault("steps", []).append({
+            "type": "TRACE_STEP",
+            "step_index": len(task.get("steps", [])) + 1,
+            "node_name": "hitl_rejected",
+            "model_id": "system",
+            "status": "HALTED",
+            "thought": f"Operator rejected deliverable: {request.notes or 'No comments'}",
+            "elapsed_ms": 10.0,
+        })
+
     return {
         "task_id": task_id,
         "decision": request.decision,

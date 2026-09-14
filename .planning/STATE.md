@@ -3,17 +3,17 @@ gsd_state_version: "1.0"
 current_phase: 5
 current_phase_name: Workbench Web Interface, CLI & Role-Based Access Control
 status: executing
-stopped_at: Plan 05-01 complete, ready to execute Wave 2 (Plan 05-02)
-last_updated: "2026-09-14T11:45:00.000Z"
+stopped_at: Plan 05-02 complete, ready to execute Wave 3 (Plan 05-03)
+last_updated: "2026-09-14T12:00:00.000Z"
 last_activity: 2026-09-14
-last_activity_desc: Plan 05-01 complete (FastAPI backend, REST APIs, WebSocket streaming, RBAC middleware verified with 75 tests)
-state_head: 857cd35
+last_activity_desc: Plan 05-02 complete (Multi-pane web UI with zero-external-CDN air-gap strategy, preview canvas, dynamic RBAC view filtering, and guided demo workflows verified with 104 tests)
+state_head: d704e2a
 progress:
   total_phases: 6
   completed_phases: 4
   total_plans: 16
-  completed_plans: 14
-  percent: 88
+  completed_plans: 15
+  percent: 94
 ---
 
 # Project State
@@ -28,19 +28,19 @@ See: .planning/PROJECT.md (updated 2026-09-09)
 ## Current Position
 
 Phase: 5 — Workbench Web Interface, CLI & Role-Based Access Control
-Plan: 05-02 (Wave 2: Multi-Pane Web UI & Guided Demo Modes)
-Status: In progress (Plan 05-01 complete)
-Last activity: 2026-09-14 — Plan 05-01 complete (FastAPI backend, REST APIs, WebSocket streaming, RBAC middleware)
+Plan: 05-02 complete, ready for 05-03 (Wave 3: Sovereign CLI & Python SDK)
+Status: In progress (Plan 05-02 complete)
+Last activity: 2026-09-14 — Plan 05-02 complete (Multi-pane Web UI, canvas document preview, RBAC view filtering, guided demo workflows)
 
-Progress: [█████████░] 88% (Plan 05-01 complete) | Overall Project: [█████████░] 88%
+Progress: [█████████▉] 94% (Plan 05-02 complete) | Overall Project: [█████████▉] 94%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 13
+- Total plans completed: 14
 - Average duration: ~17 min
-- Total execution time: 3.7 hours
+- Total execution time: 3.9 hours
 
 **By Phase:**
 
@@ -50,12 +50,12 @@ Progress: [█████████░] 88% (Plan 05-01 complete) | Overall P
 | 2. Model Management | 3/3 | 3 | ~18 min |
 | 3. Agentic Runtime | 3/3 | 3 | ~16 min |
 | 4. Multimodal & Deliverables | 4/4 | 4 | ~18 min |
-| 5. Workbench UI & RBAC | 0/3 | - | - |
+| 5. Workbench UI & RBAC | 2/3 | 3 | ~18 min |
 | 6. SIH Demo Workflows | 0/2 | - | - |
 
 **Recent Trend:**
 
-- Last 5 plans: 03-03, 04-01, 04-02, 04-03, 04-04
+- Last 5 plans: 04-02, 04-03, 04-04, 05-01, 05-02
 - Trend: Stable
 
 ## Accumulated Context
@@ -68,6 +68,9 @@ Recent decisions affecting current work:
 - [Init]: Treat Sovereign_AI_Workbench_PRD.md as primary functional authority and Air-Gapped Industrial AI Workbench.md as technical research.
 - [Init]: Adopt Vertical MVP roadmap structure (6 phases) prioritizing strong demonstrable SIH end-to-end capabilities.
 - [Init]: Enforce default-deny network egress policy and hash-chained audit logging from day one.
+- [05-01]: Enforce 3-role RBAC across FastAPI endpoints; block Auditor from task submission and HITL approval with immutable audit alerts.
+- [05-02]: Enforce 100% zero-external-CDN policy across web UI assets using system font stack, inline SVGs, and automated regex static asset audit tests.
+- [05-02]: Construct interactive canvas bounding box overlay renderer supporting NormalizedDocument coordinates and industrial diff color schemes.
 
 ### Pending Todos
 

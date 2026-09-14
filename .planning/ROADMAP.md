@@ -146,7 +146,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 05-02: Build multi-pane Web UI with guided demo modes and live network monitor dashboard
+- [x] 05-02: Build multi-pane Web UI with guided demo modes and live network monitor dashboard
 
 **Wave 3** *(blocked on Wave 1 completion)*
 
@@ -185,5 +185,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. Local Model Management, Adapters & VRAM Scheduler | 3/3 | Complete | 2026-09-10 |
 | 3. Agentic State Machine, Tool Registry & Isolated Sandbox | 3/3 | Complete | 2026-09-10 |
 | 4. Multimodal Ingestion, Local RAG & Native Deliverable Engines | 4/4 | Complete    | 2026-09-14 |
-| 5. Workbench Web Interface, CLI & Role-Based Access Control | 1/3 | In progress | - |
+| 5. Workbench Web Interface, CLI & Role-Based Access Control | 2/3 | In progress | - |
 | 6. SIH End-to-End Demonstration Workflows & Verification | 0/2 | Not started | - |

@@ -140,9 +140,16 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
+**Wave 1**
 
 - [ ] 05-01: Implement FastAPI backend endpoints, WebSocket event streaming, and RBAC middleware
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 05-02: Build multi-pane Web UI with guided demo modes and live network monitor dashboard
+
+**Wave 3** *(blocked on Wave 1 completion)*
+
 - [ ] 05-03: Implement Workbench CLI and lightweight Python SDK for task submission and audit export
 
 ### Phase 6: SIH End-to-End Demonstration Workflows & Verification

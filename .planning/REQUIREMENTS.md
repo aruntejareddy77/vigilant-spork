@@ -27,24 +27,24 @@
 
 ### Multimodal Ingestion & Document Understanding (MMOD)
 
-- [ ] **MMOD-01**: Offline OCR pipeline extracts text, layout, and bounding boxes from scanned/photographed documents (FR-MI-1)
-- [ ] **MMOD-02**: Handwriting recognition extracts entries from structured inspection checklists and forms with confidence scoring and flagging for low confidence (FR-MI-2)
-- [ ] **MMOD-03**: Vision model analyzes engineering drawings, P&IDs, and equipment photographs to extract structural descriptions and visual elements (FR-MI-3)
-- [ ] **MMOD-04**: System normalizes ingested content into a unified representation preserving page numbers and region coordinates for citation (FR-MI-4)
+- [x] **MMOD-01**: Offline OCR pipeline extracts text, layout, and bounding boxes from scanned/photographed documents (FR-MI-1)
+- [x] **MMOD-02**: Handwriting recognition extracts entries from structured inspection checklists and forms with confidence scoring and flagging for low confidence (FR-MI-2)
+- [x] **MMOD-03**: Vision model analyzes engineering drawings, P&IDs, and equipment photographs to extract structural descriptions and visual elements (FR-MI-3)
+- [x] **MMOD-04**: System normalizes ingested content into a unified representation preserving page numbers and region coordinates for citation (FR-MI-4)
 
 ### Native Deliverable Generation (DELV)
 
-- [ ] **DELV-01**: System generates native Microsoft Word (.docx) documents with structured headings, formatted findings tables, and corporate styling (FR-DG-1)
-- [ ] **DELV-02**: System generates native Microsoft Excel (.xlsx) workbooks with live mathematical formulas, cell references, and recalculable sheets (FR-DG-2)
-- [ ] **DELV-03**: System generates native Microsoft PowerPoint (.pptx) decks with styled slide layouts and editable native charts (FR-DG-3)
-- [ ] **DELV-04**: System exports reproducible code artifacts accompanied by verified execution logs and sample data inputs in `/local/output` (FR-DG-4)
-- [ ] **DELV-05**: System exports verifiable engineering calculation traces detailing applied standard clauses, input variables, and intermediate math steps (FR-DG-5)
+- [x] **DELV-01**: System generates native Microsoft Word (.docx) documents with structured headings, formatted findings tables, and corporate styling (FR-DG-1)
+- [x] **DELV-02**: System generates native Microsoft Excel (.xlsx) workbooks with live mathematical formulas, cell references, and recalculable sheets (FR-DG-2)
+- [x] **DELV-03**: System generates native Microsoft PowerPoint (.pptx) decks with styled slide layouts and editable native charts (FR-DG-3)
+- [x] **DELV-04**: System exports reproducible code artifacts accompanied by verified execution logs and sample data inputs in `/local/output` (FR-DG-4)
+- [x] **DELV-05**: System exports verifiable engineering calculation traces detailing applied standard clauses, input variables, and intermediate math steps (FR-DG-5)
 
 ### Local Knowledge Base & RAG (RAG)
 
-- [ ] **RAG-01**: System indexes designated local document folders into an on-premises vector database with offline chunking and local embeddings (FR-KB-1)
-- [ ] **RAG-02**: Agent generates answers with inline citations referencing specific document IDs and section/page locations (FR-KB-2)
-- [ ] **RAG-03**: Retrieval results are filtered dynamically by user RBAC permissions preventing unauthorized access to restricted documentation (FR-KB-4)
+- [x] **RAG-01**: System indexes designated local document folders into an on-premises vector database with offline chunking and local embeddings (FR-KB-1)
+- [x] **RAG-02**: Agent generates answers with inline citations referencing specific document IDs and section/page locations (FR-KB-2)
+- [x] **RAG-03**: Retrieval results are filtered dynamically by user RBAC permissions preventing unauthorized access to restricted documentation (FR-KB-4)
 
 ### Sovereignty Verification & Auditability (SOVG)
 
@@ -112,18 +112,18 @@ Deferred to post-SIH MVP release:
 | TOOL-01 | Phase 3 | Pending |
 | TOOL-02 | Phase 3 | Pending |
 | TOOL-03 | Phase 3 | Pending |
-| MMOD-01 | Phase 4 | Pending |
-| MMOD-02 | Phase 4 | Pending |
-| MMOD-03 | Phase 4 | Pending |
-| MMOD-04 | Phase 4 | Pending |
-| DELV-01 | Phase 4 | Pending |
-| DELV-02 | Phase 4 | Pending |
-| DELV-03 | Phase 4 | Pending |
-| DELV-04 | Phase 4 | Pending |
-| DELV-05 | Phase 4 | Pending |
-| RAG-01 | Phase 4 | Pending |
-| RAG-02 | Phase 4 | Pending |
-| RAG-03 | Phase 4 | Pending |
+| MMOD-01 | Phase 4 | Complete |
+| MMOD-02 | Phase 4 | Complete |
+| MMOD-03 | Phase 4 | Complete |
+| MMOD-04 | Phase 4 | Complete |
+| DELV-01 | Phase 4 | Complete |
+| DELV-02 | Phase 4 | Complete |
+| DELV-03 | Phase 4 | Complete |
+| DELV-04 | Phase 4 | Complete |
+| DELV-05 | Phase 4 | Complete |
+| RAG-01 | Phase 4 | Complete |
+| RAG-02 | Phase 4 | Complete |
+| RAG-03 | Phase 4 | Complete |
 | SOVG-01 | Phase 1 | Complete |
 | SOVG-02 | Phase 1 | Complete |
 | SOVG-03 | Phase 1 | Complete |

@@ -6,10 +6,10 @@ The Sovereign AI Workbench roadmap delivers an end-to-end demonstrable, air-gapp
 
 ## Phases
 
-- [x] **Phase 1: Sovereign Foundation, Cryptographic Audit & Network Egress Monitoring** - Default-deny network guardrails, observable egress monitor, SHA-256 hash-chained audit logging, and binary attestation.
-- [ ] **Phase 2: Local Model Management, Adapters & VRAM Scheduler** - Pluggable model adapter interface, task-based auto-routing, memory-aware model scheduling/swapping, and deterministic mock adapters.
-- [ ] **Phase 3: Agentic State Machine, Tool Registry & Isolated Sandbox** - LangGraph state machine, typed tool registry, isolated zero-egress code sandbox with resource bounding, session persistence, self-correction, and HITL approval gates.
-- [ ] **Phase 4: Multimodal Ingestion, Local RAG & Native Deliverable Engines** - Offline OCR and handwriting extraction, local vector database with RBAC-filtered retrieval, vision drawing comparison, and native Office (.docx, .xlsx, .pptx) deliverable generators.
+- [x] **Phase 1: Sovereign Foundation, Cryptographic Audit & Network Egress Monitoring** - Default-deny network guardrails, observable egress monitor, SHA-256 hash-chained audit logging, and binary attestation. (completed 2026-09-10)
+- [x] **Phase 2: Local Model Management, Adapters & VRAM Scheduler** - Pluggable model adapter interface, task-based auto-routing, memory-aware model scheduling/swapping, and deterministic mock adapters. (completed 2026-09-10)
+- [x] **Phase 3: Agentic State Machine, Tool Registry & Isolated Sandbox** - LangGraph state machine, typed tool registry, isolated zero-egress code sandbox with resource bounding, session persistence, self-correction, and HITL approval gates. (completed 2026-09-10)
+- [x] **Phase 4: Multimodal Ingestion, Local RAG & Native Deliverable Engines** - Offline OCR and handwriting extraction, local vector database with RBAC-filtered retrieval, vision drawing comparison, and native Office (.docx, .xlsx, .pptx) deliverable generators. (completed 2026-09-14)
 - [ ] **Phase 5: Workbench Web Interface, CLI & Role-Based Access Control** - Localhost/intranet multi-pane web UI (trace, preview, approval queue, egress dashboard), administrative CLI, Python SDK, and 3-role RBAC enforcement.
 - [ ] **Phase 6: SIH End-to-End Demonstration Workflows & Verification** - Packaging, sample datasets, guided execution, and full compliance validation of the 3 SIH demo workflows (Approval Note, Sandboxed Coding, Drawing Diff).
 
@@ -105,24 +105,24 @@ Plans:
 3. Native Word (.docx) approval notes, Excel (.xlsx) sheets with live recalculable formulas, and PowerPoint (.pptx) decks are generated.
 4. Vision pipeline detects visual and schematic differences between two drawing revisions and produces an annotated overlay.
 
-**Plans:** 4 plans
+**Plans:** 4/4 plans complete
 
 Plans:
 **Wave 1**
 
-- [ ] 04-01: Implement offline OCR and structured form handwriting extraction pipeline
+- [x] 04-01: Implement offline OCR and structured form handwriting extraction pipeline
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 04-02: Build local vector database RAG pipeline with RBAC metadata filtering and inline citations
+- [x] 04-02: Build local vector database RAG pipeline with RBAC metadata filtering and inline citations
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 04-03: Implement native Office deliverable generators (.docx, .xlsx with formulas, .pptx) and calculation trace export
+- [x] 04-03: Implement native Office deliverable generators (.docx, .xlsx with formulas, .pptx) and calculation trace export
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 04-04: Implement engineering drawing / P&ID revision comparison and visual annotation overlay generator
+- [x] 04-04: Implement engineering drawing / P&ID revision comparison and visual annotation overlay generator
 
 ### Phase 5: Workbench Web Interface, CLI & Role-Based Access Control
 
@@ -176,7 +176,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 |-------|----------------|--------|-----------|
 | 1. Sovereign Foundation, Cryptographic Audit & Network Egress Monitoring | 3/3 | Complete | 2026-09-10 |
 | 2. Local Model Management, Adapters & VRAM Scheduler | 3/3 | Complete | 2026-09-10 |
-| 3. Agentic State Machine, Tool Registry & Isolated Sandbox | 0/3 | Not started | - |
-| 4. Multimodal Ingestion, Local RAG & Native Deliverable Engines | 0/4 | Not started | - |
+| 3. Agentic State Machine, Tool Registry & Isolated Sandbox | 3/3 | Complete | 2026-09-10 |
+| 4. Multimodal Ingestion, Local RAG & Native Deliverable Engines | 4/4 | Complete    | 2026-09-14 |
 | 5. Workbench Web Interface, CLI & Role-Based Access Control | 0/3 | Not started | - |
 | 6. SIH End-to-End Demonstration Workflows & Verification | 0/2 | Not started | - |

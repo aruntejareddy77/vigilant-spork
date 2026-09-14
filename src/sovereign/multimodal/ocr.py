@@ -238,6 +238,53 @@ class DeterministicMockOCRBackend(BaseOCRBackend):
 
         file_sha256 = hashlib.sha256(content_bytes).hexdigest()
 
+        # If inspecting the sample refinery vessel v301 scan, return V-301 layout blocks
+        if "v301" in validated_path.name.lower() or "refinery" in validated_path.name.lower():
+            return [
+                OCRResultBlock(
+                    text="REFINERY VESSEL V-301 INSPECTION REPORT",
+                    confidence=0.98,
+                    box_2d=[0.05, 0.08, 0.10, 0.92],
+                    block_type="header",
+                ),
+                OCRResultBlock(
+                    text="Equipment Tag: V-301",
+                    confidence=0.96,
+                    box_2d=[0.11, 0.08, 0.15, 0.45],
+                    block_type="text",
+                ),
+                OCRResultBlock(
+                    text="Facility: Jamnagar Refinery Complex - Unit 04",
+                    confidence=0.96,
+                    box_2d=[0.11, 0.46, 0.15, 0.92],
+                    block_type="text",
+                ),
+                OCRResultBlock(
+                    text="Shell Course 1 (Lower): 12.4 mm",
+                    confidence=0.96,
+                    box_2d=[0.35, 0.08, 0.39, 0.50],
+                    block_type="text",
+                ),
+                OCRResultBlock(
+                    text="External insulation integrity verified: [x]",
+                    confidence=0.94,
+                    box_2d=[0.22, 0.08, 0.26, 0.55],
+                    block_type="text",
+                ),
+                OCRResultBlock(
+                    text="Localized pitting observed at nozzle N-2 weld zone: 4.2 mm",
+                    confidence=0.78,  # Sub-0.85 threshold to trigger HITL interrupt
+                    box_2d=[0.58, 0.08, 0.65, 0.85],
+                    block_type="handwritten",
+                ),
+                OCRResultBlock(
+                    text="Inspector Signature: K. Sharma",
+                    confidence=0.95,
+                    box_2d=[0.72, 0.08, 0.76, 0.45],
+                    block_type="text",
+                ),
+            ]
+
         # Generate realistic inspection checklist layout blocks
         # Includes: title, metadata, measurements, checkboxes, and low-confidence entry for HITL testing
         return [

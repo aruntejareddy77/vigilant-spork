@@ -168,8 +168,12 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
+**Wave 1**
 
 - [ ] 06-01: Assemble sample datasets (inspection reports, historian CSVs, P&ID revisions) and automated demo test suite
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 06-02: Execute and document full verification session across all 3 demo workflows, audit trail, and zero-egress monitor
 
 ---

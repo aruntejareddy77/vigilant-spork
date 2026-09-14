@@ -57,11 +57,11 @@
 
 ### User Interfaces & Access Control (UI)
 
-- [ ] **UI-01**: Web UI provides a guided step-by-step mode for executing the core SIH demonstration workflows (FR-UI-1)
-- [ ] **UI-02**: Web application and backend APIs bind exclusively to localhost and designated intranet interfaces (FR-UI-2)
-- [ ] **UI-03**: Full-featured CLI supports model registration, task execution, audit log export, and network status checks (FR-UI-3)
-- [ ] **UI-04**: Minimal Python SDK supports programmatic task submission, status polling, and artifact retrieval (FR-UI-4)
-- [ ] **UI-05**: Role-Based Access Control enforces least-privilege view and action filtering across Admin, Standard User, and Auditor roles (FR-UI-5)
+- [x] **UI-01**: Web UI provides a guided step-by-step mode for executing the core SIH demonstration workflows (FR-UI-1)
+- [x] **UI-02**: Web application and backend APIs bind exclusively to localhost and designated intranet interfaces (FR-UI-2)
+- [x] **UI-03**: Full-featured CLI supports model registration, task execution, audit log export, and network status checks (FR-UI-3)
+- [x] **UI-04**: Minimal Python SDK supports programmatic task submission, status polling, and artifact retrieval (FR-UI-4)
+- [x] **UI-05**: Role-Based Access Control enforces least-privilege view and action filtering across Admin, Standard User, and Auditor roles (FR-UI-5)
 
 ### Core Demonstration Workflows (DEMO)
 
@@ -105,13 +105,13 @@ Deferred to post-SIH MVP release:
 | MODL-02 | Phase 2 | Complete |
 | MODL-03 | Phase 2 | Complete |
 | MODL-04 | Phase 2 | Complete |
-| ORCH-01 | Phase 3 | Pending |
-| ORCH-02 | Phase 3 | Pending |
-| ORCH-03 | Phase 3 | Pending |
-| ORCH-04 | Phase 3 | Pending |
-| TOOL-01 | Phase 3 | Pending |
-| TOOL-02 | Phase 3 | Pending |
-| TOOL-03 | Phase 3 | Pending |
+| ORCH-01 | Phase 3 | Complete |
+| ORCH-02 | Phase 3 | Complete |
+| ORCH-03 | Phase 3 | Complete |
+| ORCH-04 | Phase 3 | Complete |
+| TOOL-01 | Phase 3 | Complete |
+| TOOL-02 | Phase 3 | Complete |
+| TOOL-03 | Phase 3 | Complete |
 | MMOD-01 | Phase 4 | Complete |
 | MMOD-02 | Phase 4 | Complete |
 | MMOD-03 | Phase 4 | Complete |
@@ -130,11 +130,11 @@ Deferred to post-SIH MVP release:
 | SOVG-04 | Phase 1 | Complete |
 | SOVG-05 | Phase 1 | Complete |
 | SOVG-06 | Phase 1 | Complete |
-| UI-01 | Phase 5 | Pending |
-| UI-02 | Phase 5 | Pending |
-| UI-03 | Phase 5 | Pending |
-| UI-04 | Phase 5 | Pending |
-| UI-05 | Phase 5 | Pending |
+| UI-01 | Phase 5 | Complete |
+| UI-02 | Phase 5 | Complete |
+| UI-03 | Phase 5 | Complete |
+| UI-04 | Phase 5 | Complete |
+| UI-05 | Phase 5 | Complete |
 | DEMO-01 | Phase 6 | Pending |
 | DEMO-02 | Phase 6 | Pending |
 | DEMO-03 | Phase 6 | Pending |

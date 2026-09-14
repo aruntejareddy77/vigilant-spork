@@ -6,7 +6,9 @@ import json
 from pathlib import Path
 import sys
 import time
-from typing import Optional
+from typing import Any, Dict, List, Optional
+import urllib.error
+import urllib.request
 import click
 
 from sovereign.audit.canonical import GENESIS_PREVIOUS_HASH
@@ -18,6 +20,7 @@ from sovereign.network.monitor import NetworkMonitor
 from sovereign.network.policy import NetworkPolicyEngine
 from sovereign.network.ring_buffer import ConnectionRingBuffer
 from sovereign.network.test_egress import run_egress_probes
+from sovereign.server.config import BindingSecurityError, validate_server_binding
 
 
 @click.group()
@@ -25,6 +28,54 @@ from sovereign.network.test_egress import run_egress_probes
 def cli():
     """Sovereign AI Workbench - Self-Hosted Air-Gapped Industrial Platform."""
     pass
+
+
+def _send_api_request(
+    endpoint: str,
+    method: str = "GET",
+    server_url: str = "http://127.0.0.1:8000",
+    payload: Optional[Dict[str, Any]] = None,
+    role: Optional[str] = None,
+    token: Optional[str] = None,
+    timeout: float = 10.0,
+) -> Dict[str, Any]:
+    """Send an authenticated HTTP request to the Sovereign Workbench API."""
+    url = f"{server_url.rstrip('/')}/{endpoint.lstrip('/')}"
+    headers = {
+        "Accept": "application/json",
+        "User-Agent": "Sovereign-CLI/0.1.0",
+    }
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    elif role:
+        headers["X-Sovereign-Role"] = role.lower()
+
+    data = None
+    if payload is not None:
+        data = json.dumps(payload).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+
+    req = urllib.request.Request(url, data=data, headers=headers, method=method)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            resp_body = resp.read().decode("utf-8")
+            return json.loads(resp_body) if resp_body else {}
+    except urllib.error.HTTPError as exc:
+        err_msg = exc.reason
+        try:
+            err_body = exc.read().decode("utf-8")
+            err_json = json.loads(err_body)
+            err_msg = err_json.get("detail", err_body)
+        except Exception:
+            pass
+        click.echo(f"[ERROR] API request failed ({exc.code}): {err_msg}", err=True)
+        sys.exit(1)
+    except urllib.error.URLError as exc:
+        click.echo(f"[ERROR] Connection failed to {server_url}: {exc.reason}", err=True)
+        sys.exit(1)
+    except Exception as exc:
+        click.echo(f"[ERROR] Unexpected request error: {exc}", err=True)
+        sys.exit(1)
 
 
 # ==========================================
@@ -628,6 +679,86 @@ def model_route(prompt: str, models_dir: str, image_path: Optional[str], model_o
     sys.exit(0)
 
 
+@model.command("vram")
+@click.option("--server-url", default=None, help="Workbench server URL to query live metrics.")
+@click.option("--dir", "models_dir", default="models", type=click.Path(file_okay=False), help="Directory containing model manifests.")
+@click.option("--total-vram", default=24576, type=int, help="Total GPU VRAM budget in MB.")
+@click.option("--reserve", default=2048, type=int, help="Safety reserve headroom in MB.")
+def model_vram(server_url: Optional[str], models_dir: str, total_vram: int, reserve: int):
+    """
+    Display GPU VRAM memory budget, active allocations, safety reserve, and headroom.
+    """
+    total_mb = total_vram
+    reserve_mb = reserve
+    usable_mb = max(0, total_vram - reserve)
+    allocated_mb = 0
+    available_mb = usable_mb
+    loaded_models: List[Any] = []
+
+    if server_url:
+        try:
+            data = _send_api_request("/api/models/vram", method="GET", server_url=server_url)
+            total_mb = data.get("total_mb", total_mb)
+            usable_mb = data.get("usable_mb", usable_mb)
+            allocated_mb = data.get("allocated_mb", allocated_mb)
+            available_mb = data.get("available_mb", available_mb)
+            loaded_models = data.get("loaded_models", [])
+            reserve_mb = max(0, total_mb - usable_mb)
+        except SystemExit:
+            raise
+        except Exception:
+            pass
+    else:
+        try:
+            from sovereign.models.registry import ModelRegistry
+            from sovereign.models.scheduler import VRAMScheduler
+
+            registry = ModelRegistry()
+            d_path = Path(models_dir)
+            if d_path.exists():
+                registry.discover_models(d_path)
+            scheduler = VRAMScheduler(
+                registry=registry,
+                total_vram_mb=total_vram,
+                reserve_headroom_mb=reserve,
+            )
+            total_mb = scheduler.total_vram_mb
+            reserve_mb = scheduler.reserve_headroom_mb
+            usable_mb = scheduler.usable_vram_mb
+            allocated_mb = scheduler.current_allocated_mb
+            available_mb = scheduler.available_vram_mb
+            loaded_models = scheduler.list_loaded_models()
+        except Exception:
+            pass
+
+    used_pct = (allocated_mb / usable_mb * 100.0) if usable_mb > 0 else 0.0
+    bar_len = 20
+    filled = int(bar_len * (allocated_mb / usable_mb)) if usable_mb > 0 else 0
+    filled = min(bar_len, max(0, filled))
+    bar = "=" * filled + "-" * (bar_len - filled)
+
+    click.echo("=== Sovereign GPU VRAM Budget & Allocation ===")
+    click.echo(f"Total Budget       : {total_mb:>6,d} MB ({total_mb / 1024:.1f} GB)")
+    click.echo(f"Safety Reserve     : {reserve_mb:>6,d} MB ({reserve_mb / 1024:.1f} GB)")
+    click.echo(f"Usable Envelope    : {usable_mb:>6,d} MB ({usable_mb / 1024:.1f} GB)")
+    click.echo(f"Active Allocation  : {allocated_mb:>6,d} MB ({allocated_mb / 1024:.1f} GB)")
+    click.echo(f"Allocated MB       : {allocated_mb:>6,d} MB")
+    click.echo(f"Available Headroom : {available_mb:>6,d} MB ({available_mb / 1024:.1f} GB)")
+    click.echo(f"Memory Envelope    : [{bar}] {used_pct:.1f}% used")
+    click.echo("----------------------------------------------")
+    click.echo(f"Loaded Models ({len(loaded_models)}):")
+    if not loaded_models:
+        click.echo("  No models currently loaded in VRAM.")
+    else:
+        for m in loaded_models:
+            m_id = m.get("model_id", m) if isinstance(m, dict) else str(m)
+            vram = m.get("vram_mb", "N/A") if isinstance(m, dict) else ""
+            vram_str = f" ({vram} MB)" if vram else ""
+            click.echo(f"  • {m_id}{vram_str}")
+    click.echo("==============================================")
+    sys.exit(0)
+
+
 # ==========================================
 # Sovereign Tool Commands
 # ==========================================
@@ -868,6 +999,260 @@ def workflow_list(status: Optional[str], db_path: str):
     for t in threads:
         click.echo(f"  • {t['thread_id']:<20} [{t['status']:<9}] Updated: {t['updated_iso']}")
     sys.exit(0)
+
+
+# ==========================================
+# Sovereign Server Management
+# ==========================================
+
+@cli.command("serve")
+@click.option("--host", default="127.0.0.1", help="Binding host interface.")
+@click.option("--port", default=8000, type=int, help="Server port.")
+@click.option("--workers", default=1, type=int, help="Uvicorn workers.")
+@click.option("--reload", is_flag=True, help="Enable auto-reload.")
+def serve_command(host: str, port: int, workers: int, reload: bool):
+    """
+    Launch the Sovereign Workbench FastAPI server and static UI.
+    Fails closed on 0.0.0.0, ::, or unauthorized public IPs per UI-02.
+    """
+    try:
+        validate_server_binding(host)
+    except BindingSecurityError as exc:
+        click.echo(f"[ERROR] Security Binding Violation: {exc}", err=True)
+        sys.exit(1)
+
+    click.echo(f"Starting Sovereign Workbench server on http://{host}:{port} (workers={workers})...")
+    import uvicorn
+    uvicorn.run(
+        "sovereign.server.app:create_app",
+        host=host,
+        port=port,
+        factory=True,
+        workers=workers,
+        reload=reload,
+    )
+
+
+# ==========================================
+# Sovereign Task Operations
+# ==========================================
+
+@cli.group()
+def task():
+    """Submit, monitor, inspect, and approve stateful agent tasks."""
+    pass
+
+
+@task.command("submit")
+@click.argument("prompt", type=str)
+@click.option("--file", "files", multiple=True, type=click.Path(), help="Input file(s) for task processing.")
+@click.option("--role", default="engineer", type=click.Choice(["admin", "engineer", "auditor"], case_sensitive=False), help="User role clearance.")
+@click.option("--token", default=None, help="Bearer authorization token.")
+@click.option("--model", default=None, help="Explicit model ID override.")
+@click.option("--stream", is_flag=True, help="Stream agent reasoning trace and steps to stdout.")
+@click.option("--server-url", default="http://127.0.0.1:8000", help="Workbench server base URL.")
+def task_submit(prompt: str, files: tuple, role: str, token: Optional[str], model: Optional[str], stream: bool, server_url: str):
+    """
+    Submit a task to the Sovereign Agentic Runtime.
+    Restricts Auditor role per least-privilege policy (UI-05).
+    """
+    if role.lower() == "auditor":
+        click.echo(
+            "[ERROR] Auditor role is restricted from submitting tasks per least-privilege policy (UI-05)",
+            err=True,
+        )
+        sys.exit(1)
+
+    payload = {
+        "prompt": prompt,
+        "files": list(files) if files else [],
+        "model_override": model,
+    }
+
+    res = _send_api_request(
+        endpoint="/api/tasks",
+        method="POST",
+        server_url=server_url,
+        payload=payload,
+        role=role,
+        token=token,
+    )
+
+    task_id = res.get("task_id", "N/A")
+    thread_id = res.get("thread_id", "N/A")
+    status = res.get("status", "SUBMITTED")
+
+    click.echo(f"[OK] Task submitted successfully.")
+    click.echo(f"     Task ID   : {task_id}")
+    click.echo(f"     Thread ID : {thread_id}")
+    click.echo(f"     Status    : {status}")
+
+    if stream:
+        click.echo(f"Streaming execution trace for {task_id}...")
+        seen_steps = 0
+        max_polls = 60
+        for _ in range(max_polls):
+            time.sleep(0.5)
+            status_data = _send_api_request(
+                endpoint=f"/api/tasks/{task_id}",
+                method="GET",
+                server_url=server_url,
+                role=role,
+                token=token,
+            )
+            steps = status_data.get("steps", [])
+            while seen_steps < len(steps):
+                step = steps[seen_steps]
+                node = step.get("node_name", "agent")
+                thought = step.get("thought", "")
+                step_st = step.get("status", "")
+                click.echo(f"[{node}] {thought or step_st}")
+                seen_steps += 1
+            if status_data.get("status") in ("COMPLETED", "FAILED", "SUSPENDED", "REJECTED"):
+                click.echo(f"Task finished with status: {status_data.get('status')}")
+                break
+
+
+@task.command("status")
+@click.argument("task_id", type=str)
+@click.option("--server-url", default="http://127.0.0.1:8000", help="Workbench server base URL.")
+@click.option("--token", default=None, help="Bearer authorization token.")
+@click.option("--role", default="engineer", help="User role.")
+def task_status(task_id: str, server_url: str, token: Optional[str], role: str):
+    """
+    Fetch and display task execution status, steps, and pending HITL approval.
+    """
+    data = _send_api_request(
+        endpoint=f"/api/tasks/{task_id}",
+        method="GET",
+        server_url=server_url,
+        role=role,
+        token=token,
+    )
+
+    status = data.get("status", "UNKNOWN")
+    steps = data.get("steps", [])
+    pending_approval = data.get("pending_approval")
+    artifacts = data.get("artifacts", [])
+
+    click.echo(f"=== Sovereign Task Status: {task_id} ===")
+    click.echo(f"Status           : {status}")
+    click.echo(f"Completed Steps  : {len(steps)}")
+    click.echo(f"Pending Approval : {pending_approval if pending_approval else 'None'}")
+    click.echo(f"Artifacts        : {', '.join(artifacts) if artifacts else 'None'}")
+
+    if pending_approval:
+        click.echo("\n[ATTENTION] Task is paused at Human-in-the-Loop approval gate.")
+        click.echo(f"Action Details   : {pending_approval}")
+        click.echo(f"To approve: sovereign task approve {task_id}")
+        click.echo(f"To reject : sovereign task reject {task_id}")
+
+
+@task.command("logs")
+@click.argument("task_id", type=str)
+@click.option("--follow", is_flag=True, help="Follow logs until completion.")
+@click.option("--server-url", default="http://127.0.0.1:8000", help="Workbench server base URL.")
+@click.option("--token", default=None, help="Bearer authorization token.")
+@click.option("--role", default="engineer", help="User role.")
+def task_logs(task_id: str, follow: bool, server_url: str, token: Optional[str], role: str):
+    """
+    Display execution trace logs for a task.
+    """
+    seen_steps = 0
+    while True:
+        data = _send_api_request(
+            endpoint=f"/api/tasks/{task_id}",
+            method="GET",
+            server_url=server_url,
+            role=role,
+            token=token,
+        )
+        steps = data.get("steps", [])
+        if seen_steps == 0:
+            click.echo(f"=== Execution Trace: {task_id} (Status: {data.get('status')}) ===")
+        while seen_steps < len(steps):
+            step = steps[seen_steps]
+            idx = step.get("step_index", seen_steps + 1)
+            node = step.get("node_name", "unknown")
+            st = step.get("status", "COMPLETED")
+            elapsed = step.get("elapsed_ms", 0.0)
+            thought = step.get("thought", "")
+            click.echo(f"[{idx}] {node} [{st}] ({elapsed:.1f}ms): {thought}")
+            seen_steps += 1
+
+        if not follow or data.get("status") in ("COMPLETED", "FAILED", "SUSPENDED", "REJECTED"):
+            break
+        time.sleep(1.0)
+
+
+@task.command("approve")
+@click.argument("task_id", type=str)
+@click.option("--notes", default=None, help="Operator review notes.")
+@click.option("--role", default="engineer", type=click.Choice(["admin", "engineer", "auditor"], case_sensitive=False), help="User role.")
+@click.option("--token", default=None, help="Bearer authorization token.")
+@click.option("--server-url", default="http://127.0.0.1:8000", help="Workbench server base URL.")
+def task_approve(task_id: str, notes: Optional[str], role: str, token: Optional[str], server_url: str):
+    """
+    Approve a suspended task deliverable and resume workflow execution.
+    Restricts Auditor role per least-privilege policy (UI-05).
+    """
+    if role.lower() == "auditor":
+        click.echo(
+            "[ERROR] Auditor role is restricted from approving tasks per least-privilege policy (UI-05)",
+            err=True,
+        )
+        sys.exit(1)
+
+    payload = {
+        "decision": "approve",
+        "notes": notes or "Operator approved via CLI",
+    }
+    res = _send_api_request(
+        endpoint=f"/api/tasks/{task_id}/resume",
+        method="POST",
+        server_url=server_url,
+        payload=payload,
+        role=role,
+        token=token,
+    )
+    click.echo(f"=== Resumed Task: {task_id} ===")
+    click.echo(f"Decision  : APPROVE")
+    click.echo(f"Status    : {res.get('status', 'RESUMED')}")
+
+
+@task.command("reject")
+@click.argument("task_id", type=str)
+@click.option("--reason", default=None, help="Rejection rationale.")
+@click.option("--role", default="engineer", type=click.Choice(["admin", "engineer", "auditor"], case_sensitive=False), help="User role.")
+@click.option("--token", default=None, help="Bearer authorization token.")
+@click.option("--server-url", default="http://127.0.0.1:8000", help="Workbench server base URL.")
+def task_reject(task_id: str, reason: Optional[str], role: str, token: Optional[str], server_url: str):
+    """
+    Reject a suspended task deliverable and halt workflow execution.
+    Restricts Auditor role per least-privilege policy (UI-05).
+    """
+    if role.lower() == "auditor":
+        click.echo(
+            "[ERROR] Auditor role is restricted from rejecting tasks per least-privilege policy (UI-05)",
+            err=True,
+        )
+        sys.exit(1)
+
+    payload = {
+        "decision": "reject",
+        "notes": reason or "Operator rejected via CLI",
+    }
+    res = _send_api_request(
+        endpoint=f"/api/tasks/{task_id}/resume",
+        method="POST",
+        server_url=server_url,
+        payload=payload,
+        role=role,
+        token=token,
+    )
+    click.echo(f"=== Resumed Task: {task_id} ===")
+    click.echo(f"Decision  : REJECT")
+    click.echo(f"Status    : {res.get('status', 'REJECTED')}")
 
 
 if __name__ == "__main__":

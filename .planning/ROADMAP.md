@@ -170,7 +170,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 06-01: Assemble sample datasets (inspection reports, historian CSVs, P&ID revisions) and automated demo test suite
+- [x] 06-01: Assemble sample datasets (inspection reports, historian CSVs, P&ID revisions) and automated demo test suite
 
 **Wave 2** *(blocked on Wave 1 completion)*
 

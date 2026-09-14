@@ -9,6 +9,7 @@ from typing import Optional
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from sovereign.server.config import HostHeaderMiddleware, ServerConfig
@@ -137,7 +138,7 @@ def create_app(
             },
         }
 
-    # ── Static Files Mount ───────────────────────────────────────────────
+    # ── Static Files Mount & Root Route ──────────────────────────────────
     static_dir = server_config.static_dir
     if static_dir is None:
         static_dir = str(Path(__file__).parent / "static")
@@ -145,5 +146,12 @@ def create_app(
     static_path = Path(static_dir)
     if static_path.exists():
         app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
+
+        @app.get("/", response_class=FileResponse, include_in_schema=False)
+        async def root():
+            index_path = static_path / "index.html"
+            if index_path.exists():
+                return FileResponse(str(index_path))
+            return {"message": "Sovereign AI Workbench API operational"}
 
     return app

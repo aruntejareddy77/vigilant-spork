@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sovereign AI Workbench — Air-Gapped Operations Console</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <!-- Inline SVG Symbol Library (Zero External Dependencies) -->
+  <svg style="display: none;">
+    <symbol id="icon-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </symbol>
+    <symbol id="icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="5 3 19 12 5 21 5 3"/>
+    </symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </symbol>
+    <symbol id="icon-terminal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="4 17 10 11 4 5"/>
+      <line x1="12" y1="19" x2="20" y2="19"/>
+    </symbol>
+    <symbol id="icon-document" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+      <polyline points="10 9 9 9 8 9"/>
+    </symbol>
+    <symbol id="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </symbol>
+    <symbol id="icon-alert-triangle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/>
+      <line x1="12" y1="17" x2="12.01" y2="17"/>
+    </symbol>
+    <symbol id="icon-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </symbol>
+    <symbol id="icon-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="23 4 23 10 17 10"/>
+      <polyline points="1 20 1 14 7 14"/>
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+    </symbol>
+  </svg>
+
+  <!-- Top Navigation Bar -->
+  <header class="top-nav">
+    <div class="nav-left">
+      <div class="brand">
+        <svg class="brand-icon"><use href="#icon-shield"/></svg>
+        <span class="brand-title">SOVEREIGN AI WORKBENCH</span>
+      </div>
+      <div id="airgap-indicator" class="badge badge-airgap">
+        <span class="status-dot green"></span>
+        <span>AIR-GAPPED ENCLAVE</span>
+      </div>
+    </div>
+    <div class="nav-right">
+      <div class="role-selector-container">
+        <label for="role-selector">Role Clearance:</label>
+        <select id="role-selector" class="role-dropdown">
+          <option value="admin">Admin (Clearance 3)</option>
+          <option value="engineer" selected>Engineer (Clearance 2)</option>
+          <option value="auditor">Auditor (Clearance 1)</option>
+        </select>
+      </div>
+      <div id="egress-badge" class="badge badge-egress">
+        <span class="status-dot green"></span>
+        <span id="egress-status-text">ZERO LEAKS</span>
+      </div>
+      <div id="vram-pill" class="pill pill-vram">
+        <span class="pill-label">VRAM:</span>
+        <span id="vram-usage-text">8.2 / 22.0 GB</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <!-- Left Sidebar -->
+    <aside class="sidebar">
+      <!-- Guided SIH Demo Section -->
+      <section class="sidebar-section" id="guided-demos-section">
+        <h3 class="section-title">
+          <svg class="section-icon"><use href="#icon-play"/></svg>
+          Guided SIH Demos
+        </h3>
+        <div class="demo-buttons">
+          <button id="btn-demo-a" class="btn btn-demo" data-demo="demo_a">
+            <span class="demo-code">Demo A</span>
+            <span class="demo-name">Inspection &rarr; Approval Note</span>
+          </button>
+          <button id="btn-demo-b" class="btn btn-demo" data-demo="demo_b">
+            <span class="demo-code">Demo B</span>
+            <span class="demo-name">Code Gen &amp; Sandbox Execution</span>
+          </button>
+          <button id="btn-demo-c" class="btn btn-demo" data-demo="demo_c">
+            <span class="demo-code">Demo C</span>
+            <span class="demo-name">P&amp;ID Drawing Revision Diff</span>
+          </button>
+        </div>
+        <!-- Real-time Demo Steps Timeline -->
+        <div id="demo-step-container" class="demo-steps" style="display: none;">
+          <h4 class="sub-title" id="active-demo-title">Active Workflow</h4>
+          <ol id="demo-step-list" class="step-list"></ol>
+        </div>
+      </section>
+
+      <!-- Task Submission Form (Hidden in Auditor Mode) -->
+      <section class="sidebar-section" id="task-submission-container">
+        <h3 class="section-title">
+          <svg class="section-icon"><use href="#icon-terminal"/></svg>
+          Task Submission
+        </h3>
+        <form id="task-form" onsubmit="return false;">
+          <label for="task-prompt" class="form-label">Operator Prompt:</label>
+          <textarea id="task-prompt" class="form-textarea" placeholder="Enter engineering instructions or multimodal analysis query..." rows="4"></textarea>
+
+          <label for="task-file" class="form-label">Attachment (Document / Drawing / CSV):</label>
+          <input type="file" id="task-file" class="form-file">
+
+          <button type="button" id="btn-submit-task" class="btn btn-primary btn-submit">
+            <svg class="btn-icon"><use href="#icon-play"/></svg>
+            Submit Task
+          </button>
+        </form>
+      </section>
+
+      <!-- Auditor Clearance Notice (Visible in Auditor Mode) -->
+      <div id="auditor-notice" class="auditor-banner" style="display: none;">
+        <svg class="banner-icon"><use href="#icon-lock"/></svg>
+        <div class="banner-content">
+          <strong>Auditor Clearance Active</strong>
+          <p>Auditor Clearance Active: Oversight &amp; Verification Only. Task submission disabled per least-privilege policy (FR-UI-5).</p>
+        </div>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="sidebar-section sidebar-nav">
+        <h3 class="section-title">Enclave Navigation</h3>
+        <ul class="nav-links">
+          <li><a href="#pane-trace" id="nav-workflows" class="nav-link active"><svg class="nav-icon"><use href="#icon-terminal"/></svg> Live Workflows</a></li>
+          <li><a href="#pane-preview" id="nav-models" class="nav-link"><svg class="nav-icon"><use href="#icon-document"/></svg> Document Preview</a></li>
+          <li><a href="#pane-hitl" id="nav-approval" class="nav-link"><svg class="nav-icon"><use href="#icon-check"/></svg> Approval Queue</a></li>
+          <li><a href="#pane-network" id="nav-network" class="nav-link"><svg class="nav-icon"><use href="#icon-shield"/></svg> Network Telemetry</a></li>
+          <li><a href="#pane-audit" id="nav-audit" class="nav-link"><svg class="nav-icon"><use href="#icon-lock"/></svg> Audit Ledger</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Multi-Pane Dashboard (4 Panes) -->
+    <main class="dashboard-grid">
+      <!-- Pane 1: Live Agent Reasoning Trace -->
+      <section id="pane-trace" class="dashboard-pane">
+        <div class="pane-header">
+          <div class="pane-title">
+            <svg class="pane-icon"><use href="#icon-terminal"/></svg>
+            <h2>Live Agent Reasoning Trace</h2>
+          </div>
+          <div class="pane-status">
+            <span id="trace-task-badge" class="badge badge-secondary">Idle</span>
+          </div>
+        </div>
+        <div class="pane-body">
+          <div id="trace-timeline" class="trace-timeline">
+            <div class="timeline-empty-state">
+              <p>No active agent reasoning trace. Submit a task or launch a guided demo to begin execution.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pane 2: Document & Visual Diff Preview -->
+      <section id="pane-preview" class="dashboard-pane">
+        <div class="pane-header">
+          <div class="pane-title">
+            <svg class="pane-icon"><use href="#icon-eye"/></svg>
+            <h2>Document &amp; Visual Diff Preview</h2>
+          </div>
+          <div id="preview-controls" class="preview-controls">
+            <button id="btn-prev-page" class="btn btn-sm" disabled>&larr;</button>
+            <span id="preview-page-indicator" class="preview-page-label">Page 1 / 1</span>
+            <button id="btn-next-page" class="btn btn-sm" disabled>&rarr;</button>
+            <button id="btn-zoom-reset" class="btn btn-sm">100%</button>
+          </div>
+        </div>
+        <div class="pane-body preview-body">
+          <div id="preview-viewport" class="preview-viewport">
+            <canvas id="preview-canvas" width="800" height="600"></canvas>
+            <img id="preview-image" alt="Preview Base Layer" style="display: none;">
+            <div id="preview-empty-state" class="preview-empty-state">
+              <p>No document or drawing loaded. Upload an asset or start Demo A / Demo C.</p>
+            </div>
+          </div>
+          <div id="preview-legend" class="preview-legend">
+            <span class="legend-item"><span class="legend-box color-printed"></span> Printed Text</span>
+            <span class="legend-item"><span class="legend-box color-handwriting"></span> Handwriting</span>
+            <span class="legend-item"><span class="legend-box color-review"></span> Review (&lt;0.85)</span>
+            <span class="legend-item"><span class="legend-box color-diff-add"></span> Diff Added</span>
+            <span class="legend-item"><span class="legend-box color-diff-rem"></span> Diff Removed</span>
+            <span class="legend-item"><span class="legend-box color-diff-mod"></span> Diff Modified</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pane 3: Human-in-the-Loop (HITL) Approval Queue -->
+      <section id="pane-hitl" class="dashboard-pane">
+        <div class="pane-header">
+          <div class="pane-title">
+            <svg class="pane-icon"><use href="#icon-check"/></svg>
+            <h2>Human-in-the-Loop Approval Queue</h2>
+          </div>
+          <div class="pane-status">
+            <span id="hitl-count-badge" class="badge badge-secondary">0 Pending</span>
+          </div>
+        </div>
+        <div class="pane-body">
+          <div id="hitl-queue-container" class="hitl-queue-container">
+            <div class="hitl-empty-state">
+              <p>No deliverables currently pending operator sign-off. Workflows requiring human review will pause here.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pane 4: Real-Time Egress Monitor -->
+      <section id="pane-network" class="dashboard-pane">
+        <div class="pane-header">
+          <div class="pane-title">
+            <svg class="pane-icon"><use href="#icon-shield"/></svg>
+            <h2>Real-Time Egress Monitor</h2>
+          </div>
+          <div class="pane-actions">
+            <button id="btn-run-egress-check" class="btn btn-sm btn-accent">
+              <svg class="btn-icon"><use href="#icon-refresh"/></svg>
+              Run Egress Check
+            </button>
+          </div>
+        </div>
+        <div class="pane-body">
+          <div id="network-counters" class="network-counters">
+            <div class="counter-card">
+              <span class="counter-label">Total Events</span>
+              <span id="counter-total" class="counter-value">0</span>
+            </div>
+            <div class="counter-card">
+              <span class="counter-label">Allowed (Intranet)</span>
+              <span id="counter-allowed" class="counter-value text-green">0</span>
+            </div>
+            <div class="counter-card">
+              <span class="counter-label">Denied Attempts</span>
+              <span id="counter-denied" class="counter-value text-red">0</span>
+            </div>
+            <div class="counter-card">
+              <span class="counter-label">Egress Leaks</span>
+              <span id="counter-leaks" class="counter-value text-green">0</span>
+            </div>
+          </div>
+          <div class="table-container">
+            <table id="network-events-table" class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Proto</th>
+                  <th>Process</th>
+                  <th>Local Socket</th>
+                  <th>Remote Destination</th>
+                  <th>Verdict</th>
+                </tr>
+              </thead>
+              <tbody id="network-events-body">
+                <tr class="table-empty-row">
+                  <td colspan="6">Listening for kernel-level socket telemetry...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Scripts: Vanilla ES6 Air-Gapped Modules -->
+  <script src="/static/preview.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
